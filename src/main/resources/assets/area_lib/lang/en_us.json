@@ -1,0 +1,13 @@
+{
+  "area_lib.commands.area.create.error_existing": "Can't create area as it already exists",
+  "area_lib.commands.area.create.success": "Created area %s successfully",
+  "area_lib.commands.area.add_to.success": "Added region to area %s successfully",
+  "area_lib.commands.area.remove_from.success": "Removed region from area %s successfully",
+  "area_lib.commands.area.remove_from.error_to_few": "Can't remove from area with only one region. If you intended to delete the area instead use /area delete",
+  "area_lib.commands.area.set_color.success": "Set color for area %s successfully",
+  "area_lib.commands.area.delete.success": "Removed area %s successfully. Data: %s",
+  "area_lib.commands.area.error_does_not_exist": "Area does not exist",
+  "area_lib.commands.area.error_not_in_area": "Not in an area",
+  "area_lib.commands.area.error_only_block": "This is only implemented for block areas currently",
+  "area_lib.commands.area.error_impossible": "Wtf did you do?"
+}

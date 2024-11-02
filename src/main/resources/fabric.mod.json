@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "area_lib",
+  "version": "${version}",
+  "name": "AreaLib",
+  "description": "Library mod that allows for creating arbitrary areas",
+  "authors": [
+    "Tomate0613"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/area_lib/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "dev.doublekekse.area_lib.client.AreaLibClient"
+    ],
+    "main": [
+      "dev.doublekekse.area_lib.AreaLib"
+    ]
+  },
+  "mixins": [
+    "area_lib.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
