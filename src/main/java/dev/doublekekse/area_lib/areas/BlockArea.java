@@ -89,6 +89,10 @@ public class BlockArea implements Area {
 
     @Override
     public void render(WorldRenderContext context, PoseStack poseStack) {
+        if (!context.world().dimension().location().equals(dimension)) {
+            return;
+        }
+
         aabbs.forEach(aabb -> {
             LevelRenderer.renderLineBox(poseStack, context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
         });

@@ -6,11 +6,9 @@ import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 
@@ -18,35 +16,6 @@ public class AreaLib implements ModInitializer {
     @Override
     public void onInitialize() {
         PayloadTypeRegistry.playS2C().register(ClientboundAreaSyncPacket.TYPE, ClientboundAreaSyncPacket.STREAM_CODEC);
-
-        WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
-            var gameMode = Minecraft.getInstance().gameMode;
-
-            if (gameMode == null) {
-                return;
-            }
-
-            if (gameMode.getPlayerMode().isSurvival()) {
-                return;
-            }
-
-            var poseStack = context.matrixStack();
-            poseStack.pushPose();
-
-            var cPos = context.camera().getPosition();
-            poseStack.translate(-cPos.x, -cPos.y, -cPos.z);
-
-
-            var savedData = AreaClientData.getClientLevelData();
-
-            if (savedData != null) {
-                savedData.getAreas().forEach(area -> {
-                    area.render(context, poseStack);
-                });
-            }
-
-            poseStack.popPose();
-        });
 
         CommandRegistrationCallback.EVENT.register(
             (dispatcher, registryAccess, environment) -> {
