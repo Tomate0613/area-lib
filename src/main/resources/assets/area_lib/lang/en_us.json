@@ -9,5 +9,7 @@
   "area_lib.commands.area.error_does_not_exist": "Area does not exist",
   "area_lib.commands.area.error_not_in_area": "Not in an area",
   "area_lib.commands.area.error_only_block": "This is only implemented for block areas currently",
-  "area_lib.commands.area.error_impossible": "Wtf did you do?"
+  "area_lib.commands.area.error_impossible": "Wtf did you do?",
+  "area_lib.key.toggle_areas": "Toggle area rendering",
+  "area_lib.category.area_lib": "Area Lib"
 }
