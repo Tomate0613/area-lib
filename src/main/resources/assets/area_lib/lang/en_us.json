@@ -5,11 +5,13 @@
   "area_lib.commands.area.remove_from.success": "Removed region from area %s successfully",
   "area_lib.commands.area.remove_from.error_to_few": "Can't remove from area with only one region. If you intended to delete the area instead use /area delete",
   "area_lib.commands.area.set_color.success": "Set color for area %s successfully",
+  "area_lib.commands.area.set_priority.success": "Set priority for area %s successfully",
   "area_lib.commands.area.delete.success": "Removed area %s successfully. Data: %s",
   "area_lib.commands.area.error_does_not_exist": "Area does not exist",
   "area_lib.commands.area.error_not_in_area": "Not in an area",
   "area_lib.commands.area.error_only_block": "This is only implemented for block areas currently",
   "area_lib.commands.area.error_impossible": "Wtf did you do?",
   "area_lib.key.toggle_areas": "Toggle area rendering",
-  "area_lib.category.area_lib": "Area Lib"
+  "area_lib.category.area_lib": "Area Lib",
+  "area_lib.commands.area.query.success": "You are currently in \"%s\" with data %s"
 }

@@ -26,6 +26,8 @@ public class BlockArea implements Area {
     float g = 1;
     float b = 1;
 
+    int priority = 0;
+
     public BlockArea(ResourceLocation dimension, AABB... aabb) {
         this.dimension = dimension;
         aabbs = new ArrayList<>(List.of(aabb));
@@ -47,11 +49,23 @@ public class BlockArea implements Area {
         b = compoundTag.getFloat("b");
 
         dimension = ResourceLocation.parse(compoundTag.getString("dimension"));
+
+        priority = compoundTag.getInt("priority");
     }
 
     @Override
     public ResourceLocation getType() {
         return AreaLib.id("block");
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    @Override
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
     @Override
@@ -68,6 +82,8 @@ public class BlockArea implements Area {
         compoundTag.putFloat("b", b);
 
         compoundTag.putString("dimension", dimension.toString());
+
+        compoundTag.putInt("priority", priority);
 
         return compoundTag;
     }
@@ -106,6 +122,6 @@ public class BlockArea implements Area {
     }
 
     public String toString() {
-        return "Area " + aabbs;
+        return "BlockArea " + aabbs + " priority: " + priority;
     }
 }

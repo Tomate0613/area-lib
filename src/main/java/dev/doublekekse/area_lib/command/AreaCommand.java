@@ -2,6 +2,7 @@ package dev.doublekekse.area_lib.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import dev.doublekekse.area_lib.areas.BlockArea;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
@@ -118,7 +119,27 @@ public class AreaCommand {
 
                 ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_impossible"));
                 return 0;
-            })).then(literal("set_color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
+            })).then(literal("set_priority").then(argument("id", ResourceLocationArgument.id()).then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
+                var server = ctx.getSource().getServer();
+
+                var savedData = AreaSavedData.getServerData(server);
+
+                var location = ResourceLocationArgument.getId(ctx, "id");
+
+                if (!savedData.has(location)) {
+                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist"));
+
+                    return 0;
+                }
+
+                savedData.get(location).setPriority(IntegerArgumentType.getInteger(ctx, "priority"));
+
+                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.set_priority.success", location.toString()), true);
+
+                saveAndSync(savedData, server);
+
+                return 1;
+            })))).then(literal("set_color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
                 var level = ctx.getSource().getLevel();
                 var server = ctx.getSource().getServer();
 
@@ -161,7 +182,26 @@ public class AreaCommand {
                 ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", location.toString(), area.toString()), true);
 
                 return 1;
-            })))
+            }))).then(literal("query").executes(ctx -> {
+                var level = ctx.getSource().getLevel();
+                var server = ctx.getSource().getServer();
+
+                var savedData = AreaSavedData.getServerData(server);
+
+                var pos = ctx.getSource().getPosition();
+
+                var identifiableArea = savedData.find(level, pos);
+
+                if (identifiableArea == null) {
+                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_not_in_area"));
+
+                    return 0;
+                }
+
+                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.success", identifiableArea.id().toString(), identifiableArea.area().toString()), false);
+
+                return 1;
+            }))
         );
     }
 

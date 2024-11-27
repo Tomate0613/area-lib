@@ -24,4 +24,8 @@ public interface Area {
     void render(WorldRenderContext context, PoseStack poseStack);
 
     ResourceLocation getType();
+
+    int getPriority();
+
+    void setPriority(int priority);
 }
