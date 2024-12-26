@@ -1,6 +1,8 @@
 package dev.doublekekse.area_lib;
 
 import dev.doublekekse.area_lib.areas.BlockArea;
+import dev.doublekekse.area_lib.areas.BoxArea;
+import dev.doublekekse.area_lib.areas.UnionArea;
 import dev.doublekekse.area_lib.command.AreaCommand;
 import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
@@ -11,6 +13,9 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.Level;
+
+import java.util.Objects;
 
 public class AreaLib implements ModInitializer {
     @Override
@@ -29,6 +34,8 @@ public class AreaLib implements ModInitializer {
         });
 
         AreaTypeRegistry.register(BlockArea.class, id("block"));
+        AreaTypeRegistry.register(BoxArea.class, id("box"));
+        AreaTypeRegistry.register(UnionArea.class, id("union"));
     }
 
     public static ResourceLocation id(String path) {
@@ -41,5 +48,13 @@ public class AreaLib implements ModInitializer {
 
     public static Area getClientArea(ResourceLocation id) {
         return AreaClientData.getClientLevelData().get(id);
+    }
+
+    public static AreaSavedData getSavedData(Level level) {
+        if(level.isClientSide) {
+            return AreaClientData.getClientLevelData();
+        } else {
+            return AreaSavedData.getServerData(Objects.requireNonNull(level.getServer()));
+        }
     }
 }
