@@ -51,6 +51,10 @@ public class AreaSavedData extends SavedData {
         return areas.values();
     }
 
+    public Set<Map.Entry<ResourceLocation, Area>> getAreaEntries() {
+        return areas.entrySet();
+    }
+
     public void put(ResourceLocation key, Area area) {
         areas.put(key, area);
         setDirty();
@@ -72,6 +76,7 @@ public class AreaSavedData extends SavedData {
 
     }
 
+    // TODO Switch this to entries instead
     public @Nullable IdentifiableArea find(Level level, Vec3 pos) {
         for (var location : areas.keySet()) {
             var area = areas.get(location);
@@ -93,8 +98,8 @@ public class AreaSavedData extends SavedData {
     }
 
     private static final SavedData.Factory<AreaSavedData> factory = new SavedData.Factory<>(
-        AreaSavedData::new,
-        AreaSavedData::load,
-        null
+            AreaSavedData::new,
+            AreaSavedData::load,
+            null
     );
 }
