@@ -14,14 +14,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
-@Deprecated
-public class BlockArea implements Area {
-    public List<AABB> aabbs;
-    public ResourceLocation dimension;
+public class BoxArea implements Area {
+    AABB aabb;
+    ResourceLocation dimension;
 
     float r = 1;
     float g = 1;
@@ -29,21 +26,18 @@ public class BlockArea implements Area {
 
     int priority = 0;
 
-    public BlockArea(ResourceLocation dimension, AABB... aabb) {
+    public BoxArea(ResourceLocation dimension, AABB aabb) {
         this.dimension = dimension;
-        aabbs = new ArrayList<>(List.of(aabb));
+        this.aabb = aabb;
     }
 
-    public BlockArea() {
+    public BoxArea() {
 
     }
 
     @Override
     public void load(CompoundTag compoundTag) {
-        var listTag = compoundTag.getList("aabbs", 10);
-
-        aabbs = new ArrayList<>();
-        listTag.forEach(tag -> aabbs.add(CompoundUtils.toAABB((CompoundTag) tag)));
+        aabb = CompoundUtils.toAABB(compoundTag.getCompound("aabb"));
 
         r = compoundTag.getFloat("r");
         g = compoundTag.getFloat("g");
@@ -73,10 +67,7 @@ public class BlockArea implements Area {
     public CompoundTag save() {
         var compoundTag = new CompoundTag();
 
-        var listTag = new ListTag();
-        aabbs.forEach(aabb -> listTag.add(CompoundUtils.fromAABB(aabb)));
-
-        compoundTag.put("aabbs", listTag);
+        compoundTag.put("aabb", CompoundUtils.fromAABB(aabb));
 
         compoundTag.putFloat("r", r);
         compoundTag.putFloat("g", g);
@@ -95,13 +86,7 @@ public class BlockArea implements Area {
             return false;
         }
 
-        for (var aabb : aabbs) {
-            if (aabb.contains(position)) {
-                return true;
-            }
-        }
-
-        return false;
+        return aabb.contains(position);
     }
 
     @Override
@@ -110,9 +95,7 @@ public class BlockArea implements Area {
             return;
         }
 
-        aabbs.forEach(aabb -> {
-            LevelRenderer.renderLineBox(poseStack, context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
-        });
+        LevelRenderer.renderLineBox(poseStack, context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
     }
 
     @Override
@@ -123,6 +106,6 @@ public class BlockArea implements Area {
     }
 
     public String toString() {
-        return "BlockArea " + aabbs + " priority: " + priority;
+        return "BoxArea " + aabb + " priority: " + priority;
     }
 }
