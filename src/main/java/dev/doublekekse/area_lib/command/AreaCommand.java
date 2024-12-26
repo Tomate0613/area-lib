@@ -19,6 +19,18 @@ import static net.minecraft.commands.Commands.literal;
 
 public class AreaCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        /*
+        TODO:
+        Change commands to
+        - /area create box <from> <to>
+        - /area create union area_id area_id area_id ...
+        - [Or whatever other types get added in the future]
+
+        - /area modify <area_id> color
+        - /area modify <area_id> priority
+        - /area remove/delete
+        - /area query
+         */
         dispatcher.register(
             literal("area").requires((s) -> s.hasPermission(2)).then(literal("create").then(argument("id", ResourceLocationArgument.id()).then(argument("pos1", Vec3Argument.vec3()).then(argument("pos2", Vec3Argument.vec3()).executes((ctx) -> {
                 var level = ctx.getSource().getLevel();
