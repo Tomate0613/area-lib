@@ -5,13 +5,13 @@ import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 public class AreaClientData {
-    public static AreaSavedData instances;
+    public static AreaSavedData instance;
 
     public static AreaSavedData getClientLevelData() {
-        return instances;
+        return instance;
     }
 
     public static void setInstance(AreaSavedData areaSavedData) {
-        instances = areaSavedData;
+        instance = areaSavedData;
     }
 }
