@@ -49,7 +49,7 @@ public class BoxArea implements Area {
 
     @Override
     public ResourceLocation getType() {
-        return AreaLib.id("block");
+        return AreaLib.id("box");
     }
 
     @Override

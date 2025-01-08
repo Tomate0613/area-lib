@@ -2,6 +2,8 @@ package dev.doublekekse.area_lib.data;
 
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaTypeRegistry;
+import dev.doublekekse.area_lib.areas.CompositeArea;
+import dev.doublekekse.area_lib.util.Pair;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -11,7 +13,6 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -65,24 +66,27 @@ public class AreaSavedData extends SavedData {
     }
 
     public Area remove(ResourceLocation id) {
-        return areas.remove(id);
+        var removedArea = areas.remove(id);
+
+        // Remove area from sub-area caches
+        // This is definitely not an ideal way to deal with this, but it works
+        for (var entry : areas.entrySet()) {
+            if (entry.getValue() instanceof CompositeArea compositeArea) {
+                compositeArea.removeSubArea(new Pair<>(id, removedArea));
+            }
+        }
+
+        return removedArea;
     }
 
     public boolean has(ResourceLocation id) {
         return areas.containsKey(id);
     }
 
-    public record IdentifiableArea(Area area, ResourceLocation id) {
-
-    }
-
-    // TODO Switch this to entries instead
-    public @Nullable IdentifiableArea find(Level level, Vec3 pos) {
-        for (var location : areas.keySet()) {
-            var area = areas.get(location);
-
-            if (area.contains(level, pos)) {
-                return new IdentifiableArea(area, location);
+    public Map.Entry<ResourceLocation, Area> find(Level level, Vec3 pos) {
+        for (var entry : areas.entrySet()) {
+            if (entry.getValue().contains(level, pos)) {
+                return entry;
             }
         }
 
@@ -98,8 +102,8 @@ public class AreaSavedData extends SavedData {
     }
 
     private static final SavedData.Factory<AreaSavedData> factory = new SavedData.Factory<>(
-            AreaSavedData::new,
-            AreaSavedData::load,
-            null
+        AreaSavedData::new,
+        AreaSavedData::load,
+        null
     );
 }

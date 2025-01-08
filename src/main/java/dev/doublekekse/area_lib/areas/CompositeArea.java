@@ -10,41 +10,51 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public abstract class CompositeArea implements Area {
-    List<Area> areas;
-    List<ResourceLocation> areaIds;
+    Set<ResourceLocation> areaIds;
 
-    ResourceLocation dimension;
+    private Collection<Area> cachedAreas;
 
     int priority = 0;
 
-    public CompositeArea(ResourceLocation dimension, Area... areas) {
-        this.dimension = dimension;
-        this.areas = new ArrayList<>(List.of(areas));
+    public CompositeArea(Set<ResourceLocation> areaIds) {
+        this.areaIds = areaIds;
     }
 
     public CompositeArea() {
 
     }
 
+    public void addSubArea(Map.Entry<ResourceLocation, ? extends Area> area) {
+        areaIds.add(area.getKey());
+
+        if (cachedAreas == null) {
+            return;
+        }
+
+        cachedAreas.add(area.getValue());
+    }
+
+    public void removeSubArea(Map.Entry<ResourceLocation, ? extends Area> area) {
+        areaIds.remove(area.getKey());
+
+        if (cachedAreas == null) {
+            return;
+        }
+
+        cachedAreas.remove(area.getValue());
+    }
+
     @Override
     public void load(CompoundTag compoundTag) {
         var listTag = compoundTag.getList("areas", 8);
 
-        areaIds = new ArrayList<>();
+        areaIds = new HashSet<>();
         listTag.forEach(tag -> areaIds.add(ResourceLocation.tryParse(tag.getAsString())));
 
-        dimension = ResourceLocation.parse(compoundTag.getString("dimension"));
-
         priority = compoundTag.getInt("priority");
-    }
-
-    @Override
-    public ResourceLocation getType() {
-        return AreaLib.id("block");
     }
 
     @Override
@@ -66,25 +76,31 @@ public abstract class CompositeArea implements Area {
 
         compoundTag.put("areas", listTag);
 
-        compoundTag.putString("dimension", dimension.toString());
-
         compoundTag.putInt("priority", priority);
 
         return compoundTag;
     }
 
-    protected void loadAreas(Level level) {
-        if (areas != null) {
-            return;
+    protected Collection<Area> getAreas(Level level) {
+        if (cachedAreas != null) {
+            return cachedAreas;
         }
 
-        areas = new ArrayList<>(areaIds.size());
+        cachedAreas = new HashSet<>(areaIds.size());
         var savedData = AreaLib.getSavedData(level);
 
-        for (var areaId : areaIds) {
-            var area = savedData.get(areaId);
-            areas.add(area);
+        var iterator = areaIds.iterator();
+        while (iterator.hasNext()) {
+            var areaId = iterator.next();
+            if (savedData.has(areaId)) {
+                var area = savedData.get(areaId);
+                cachedAreas.add(area);
+            } else {
+                iterator.remove();
+            }
         }
+
+        return cachedAreas;
     }
 
     @Override
@@ -96,6 +112,6 @@ public abstract class CompositeArea implements Area {
     }
 
     public String toString() {
-        return "CompositeArea " + areas + " priority: " + priority;
+        return "CompositeArea " + cachedAreas + " priority: " + priority;
     }
 }

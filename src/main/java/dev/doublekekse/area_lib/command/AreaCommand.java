@@ -3,7 +3,10 @@ package dev.doublekekse.area_lib.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import dev.doublekekse.area_lib.areas.BlockArea;
+import dev.doublekekse.area_lib.areas.BoxArea;
+import dev.doublekekse.area_lib.areas.UnionArea;
+import dev.doublekekse.area_lib.command.argument.AreaArgument;
+import dev.doublekekse.area_lib.command.argument.CompositeAreaArgument;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -14,34 +17,26 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.phys.AABB;
 
+import java.util.HashSet;
+
+import static dev.doublekekse.area_lib.AreaLib.AREA_LIST_ARGUMENT;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public class AreaCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        /*
-        TODO:
-        Change commands to
-        - /area create box <from> <to>
-        - /area create union area_id area_id area_id ...
-        - [Or whatever other types get added in the future]
 
-        - /area modify <area_id> color
-        - /area modify <area_id> priority
-        - /area remove/delete
-        - /area query
-         */
         dispatcher.register(
-            literal("area").requires((s) -> s.hasPermission(2)).then(literal("create").then(argument("id", ResourceLocationArgument.id()).then(argument("pos1", Vec3Argument.vec3()).then(argument("pos2", Vec3Argument.vec3()).executes((ctx) -> {
+            literal("area").requires((s) -> s.hasPermission(2)).then(literal("create").then(argument("id", ResourceLocationArgument.id()).then(literal("box").then(argument("from", Vec3Argument.vec3()).then(argument("to", Vec3Argument.vec3()).executes((ctx) -> {
                 var level = ctx.getSource().getLevel();
                 var server = ctx.getSource().getServer();
 
-                var pos1 = Vec3Argument.getVec3(ctx, "pos1");
-                var pos2 = Vec3Argument.getVec3(ctx, "pos2");
+                var from = Vec3Argument.getVec3(ctx, "from");
+                var to = Vec3Argument.getVec3(ctx, "to");
 
                 var savedData = AreaSavedData.getServerData(server);
 
-                var area = new BlockArea(level.dimension().location(), new AABB(pos1, pos2));
+                var area = new BoxArea(level.dimension().location(), new AABB(from, to));
 
                 var location = ResourceLocationArgument.getId(ctx, "id");
 
@@ -57,135 +52,68 @@ public class AreaCommand {
                 ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", location.toString()), true);
 
                 return 1;
-            }))))).then(literal("add_to").then(argument("id", ResourceLocationArgument.id()).then(argument("pos1", Vec3Argument.vec3()).then(argument("pos2", Vec3Argument.vec3()).executes((ctx) ->
-            {
+            })))).then(literal("union").then(argument("areas", AREA_LIST_ARGUMENT).executes(ctx -> {
                 var server = ctx.getSource().getServer();
-
-                var pos1 = Vec3Argument.getVec3(ctx, "pos1");
-                var pos2 = Vec3Argument.getVec3(ctx, "pos2");
+                var areas = AREA_LIST_ARGUMENT.getList(ctx, "areas");
 
                 var savedData = AreaSavedData.getServerData(server);
+                var area = new UnionArea(new HashSet<>(areas));
 
                 var location = ResourceLocationArgument.getId(ctx, "id");
 
-                if (!savedData.has(location)) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist"));
+                if (savedData.has(location)) {
+                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.create.error_existing"));
 
                     return 0;
                 }
 
-                var area = savedData.get(location);
-
-                if (!(area instanceof BlockArea blockArea)) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_only_block"));
-
-                    return 0;
-                }
-
-                blockArea.aabbs.add(new AABB(pos1, pos2));
-
+                savedData.put(location, area);
                 saveAndSync(savedData, server);
 
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.add_to.success", location.toString()), true);
+                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", location.toString()), true);
 
                 return 1;
+            }))))).then(literal("modify").then(argument("id", AreaArgument.area())
+                .then(literal("priority").then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
+                    var server = ctx.getSource().getServer();
 
-            }))))).then(literal("remove_from").executes(ctx -> {
-                var level = ctx.getSource().getLevel();
+                    var savedData = AreaSavedData.getServerData(server);
+
+                    var area = AreaArgument.getArea(ctx, "id");
+                    var priority = IntegerArgumentType.getInteger(ctx, "priority");
+
+                    area.getValue().setPriority(priority);
+
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.priority.success", area.getKey().toString(), priority), true);
+
+                    saveAndSync(savedData, server);
+
+                    return 1;
+                }))).then(literal("color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
+                    var server = ctx.getSource().getServer();
+
+                    var savedData = AreaSavedData.getServerData(server);
+
+                    var area = AreaArgument.getArea(ctx, "id");
+
+                    var r = FloatArgumentType.getFloat(ctx, "r");
+                    var g = FloatArgumentType.getFloat(ctx, "g");
+                    var b = FloatArgumentType.getFloat(ctx, "b");
+
+                    area.getValue().setColor(r, g, b);
+
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.getKey().toString()), true);
+
+                    saveAndSync(savedData, server);
+
+                    return 1;
+                })))))
+            )).then(literal("delete").then(argument("id", AreaArgument.area()).executes(ctx -> {
                 var server = ctx.getSource().getServer();
 
                 var savedData = AreaSavedData.getServerData(server);
 
-                var pos = ctx.getSource().getPosition();
-
-                var identifiableArea = savedData.find(level, pos);
-
-                if (identifiableArea == null) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_not_in_area"));
-
-                    return 0;
-                }
-
-                if (!(identifiableArea.area() instanceof BlockArea blockArea)) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_only_block"));
-
-                    return 0;
-                }
-
-                if (blockArea.aabbs.size() <= 1) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.remove_from.error_to_few"));
-
-                    return 0;
-                }
-
-                for (var aabb : blockArea.aabbs) {
-                    if (aabb.contains(pos)) {
-                        blockArea.aabbs.remove(aabb);
-                        saveAndSync(savedData, server);
-
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.remove_from.success", identifiableArea.id().toString()), true);
-
-                        return 1;
-                    }
-                }
-
-                ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_impossible"));
-                return 0;
-            })).then(literal("set_priority").then(argument("id", ResourceLocationArgument.id()).then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
-                var server = ctx.getSource().getServer();
-
-                var savedData = AreaSavedData.getServerData(server);
-
-                var location = ResourceLocationArgument.getId(ctx, "id");
-
-                if (!savedData.has(location)) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist"));
-
-                    return 0;
-                }
-
-                savedData.get(location).setPriority(IntegerArgumentType.getInteger(ctx, "priority"));
-
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.set_priority.success", location.toString()), true);
-
-                saveAndSync(savedData, server);
-
-                return 1;
-            })))).then(literal("set_color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
-                var level = ctx.getSource().getLevel();
-                var server = ctx.getSource().getServer();
-
-                var savedData = AreaSavedData.getServerData(server);
-
-                var pos = ctx.getSource().getPosition();
-
-                var identifiableArea = savedData.find(level, pos);
-
-                if (identifiableArea == null) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_not_in_area"));
-
-                    return 0;
-                }
-
-                identifiableArea.area().setColor(FloatArgumentType.getFloat(ctx, "r"), FloatArgumentType.getFloat(ctx, "g"), FloatArgumentType.getFloat(ctx, "b"));
-
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.set_color.success", identifiableArea.id().toString()), true);
-
-                saveAndSync(savedData, server);
-
-                return 1;
-            }))))).then(literal("delete").then(argument("id", ResourceLocationArgument.id()).executes(ctx -> {
-                var server = ctx.getSource().getServer();
-
-                var savedData = AreaSavedData.getServerData(server);
-
-                var location = ResourceLocationArgument.getId(ctx, "id");
-
-                if (!savedData.has(location)) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist"));
-
-                    return 0;
-                }
+                var location = AreaArgument.getAreaId(ctx, "id");
 
                 var area = savedData.remove(location);
 
@@ -202,18 +130,50 @@ public class AreaCommand {
 
                 var pos = ctx.getSource().getPosition();
 
-                var identifiableArea = savedData.find(level, pos);
+                var entries = savedData.getAreaEntries();
 
-                if (identifiableArea == null) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_not_in_area"));
-
-                    return 0;
+                var count = 0;
+                for (var entry : entries) {
+                    if (entry.getValue().contains(level, pos)) {
+                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.entry", entry.getKey().toString()), false);
+                        count++;
+                    }
                 }
 
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.success", identifiableArea.id().toString(), identifiableArea.area().toString()), false);
+                if (count == 0) {
+                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_not_in_area"));
+                }
 
-                return 1;
-            }))
+                return count;
+            })).then(literal("modify_composite").then(argument("id", CompositeAreaArgument.area())
+                .then(literal("add").then(argument("sub_area", AreaArgument.area()).executes(ctx -> {
+                    var server = ctx.getSource().getServer();
+
+                    var savedData = AreaSavedData.getServerData(server);
+                    var area = CompositeAreaArgument.getArea(ctx, "id");
+                    var subArea = AreaArgument.getArea(ctx, "sub_area");
+
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.getKey().toString(), area.getKey().toString()), false);
+
+                    area.getValue().addSubArea(subArea);
+                    saveAndSync(savedData, server);
+
+                    return 1;
+                }))).then(literal("remove").then(argument("sub_area", AreaArgument.area()).executes(ctx -> {
+                    var server = ctx.getSource().getServer();
+
+                    var savedData = AreaSavedData.getServerData(server);
+                    var area = CompositeAreaArgument.getArea(ctx, "id");
+                    var subArea = AreaArgument.getArea(ctx, "sub_area");
+
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.getKey().toString(), area.getKey().toString()), false);
+
+                    area.getValue().removeSubArea(subArea);
+                    saveAndSync(savedData, server);
+
+                    return 1;
+                }))))
+            )
         );
     }
 
