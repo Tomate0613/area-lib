@@ -40,9 +40,9 @@ public class AreaLib implements ModInitializer {
             packetSender.sendPacket(new ClientboundAreaSyncPacket(savedData));
         });
 
-        AreaTypeRegistry.register(BlockArea.class, id("block"));
-        AreaTypeRegistry.register(BoxArea.class, id("box"));
-        AreaTypeRegistry.register(UnionArea.class, id("union"));
+        AreaTypeRegistry.register(BlockArea::new, id("block"));
+        AreaTypeRegistry.register(BoxArea::new, id("box"));
+        AreaTypeRegistry.register(UnionArea::new, id("union"));
 
         ArgumentTypeRegistry.registerArgumentType(id("area"), AreaArgument.class, SingletonArgumentInfo.contextFree(AreaArgument::area));
         ArgumentTypeRegistry.registerArgumentType(id("composite_area"), CompositeAreaArgument.class, SingletonArgumentInfo.contextFree(CompositeAreaArgument::area));
