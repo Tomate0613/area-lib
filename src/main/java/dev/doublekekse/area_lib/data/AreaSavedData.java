@@ -1,7 +1,5 @@
 package dev.doublekekse.area_lib.data;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaTypeRegistry;
 import dev.doublekekse.area_lib.areas.CompositeArea;
