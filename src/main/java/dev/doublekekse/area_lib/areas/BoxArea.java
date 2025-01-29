@@ -3,6 +3,7 @@ package dev.doublekekse.area_lib.areas;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
+import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.util.CompoundUtils;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -31,7 +32,6 @@ public class BoxArea implements Area {
     }
 
     public BoxArea() {
-
     }
 
     @Override
@@ -86,6 +86,11 @@ public class BoxArea implements Area {
         }
 
         return aabb.contains(position);
+    }
+
+    @Override
+    public AABB getBoundingBox(AreaSavedData savedData) {
+        return aabb;
     }
 
     @Override

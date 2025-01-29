@@ -2,13 +2,12 @@ package dev.doublekekse.area_lib.areas;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.Area;
-import dev.doublekekse.area_lib.AreaLib;
+import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
 
 import java.util.*;
 
@@ -81,13 +80,12 @@ public abstract class CompositeArea implements Area {
         return compoundTag;
     }
 
-    protected Collection<Area> getAreas(Level level) {
+    protected Collection<Area> getAreas(AreaSavedData savedData) {
         if (cachedAreas != null) {
             return cachedAreas;
         }
 
         cachedAreas = new HashSet<>(areaIds.size());
-        var savedData = AreaLib.getSavedData(level);
 
         var iterator = areaIds.iterator();
         while (iterator.hasNext()) {

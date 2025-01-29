@@ -3,6 +3,7 @@ package dev.doublekekse.area_lib.areas;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
+import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.util.CompoundUtils;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -13,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,6 +104,11 @@ public class BlockArea implements Area {
         }
 
         return false;
+    }
+
+    @Override
+    public @Nullable AABB getBoundingBox(AreaSavedData savedData) {
+        return null;
     }
 
     @Override
