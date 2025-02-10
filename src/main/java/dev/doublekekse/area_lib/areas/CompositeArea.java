@@ -2,24 +2,23 @@ package dev.doublekekse.area_lib.areas;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.Area;
+import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Map;
 
 public abstract class CompositeArea implements Area {
-    Set<ResourceLocation> areaIds;
-
-    private Collection<Area> cachedAreas;
+    protected LazyAreaBVHTree areas;
 
     int priority = 0;
 
-    public CompositeArea(Set<ResourceLocation> areaIds) {
-        this.areaIds = areaIds;
+    public CompositeArea(LazyAreaBVHTree areas) {
+        this.areas = areas;
     }
 
     public CompositeArea() {
@@ -27,33 +26,29 @@ public abstract class CompositeArea implements Area {
     }
 
     public void addSubArea(Map.Entry<ResourceLocation, ? extends Area> area) {
-        areaIds.add(area.getKey());
-
-        if (cachedAreas == null) {
-            return;
+        if(area.getValue() instanceof CompositeArea) {
+            throw new IllegalArgumentException("Sub areas may not be composite areas");
         }
 
-        cachedAreas.add(area.getValue());
+        areas.add(area.getKey());
     }
 
-    public void removeSubArea(Map.Entry<ResourceLocation, ? extends Area> area) {
-        areaIds.remove(area.getKey());
-
-        if (cachedAreas == null) {
-            return;
-        }
-
-        cachedAreas.remove(area.getValue());
+    public void removeSubArea(ResourceLocation areaId) {
+        areas.remove(areaId);
     }
 
     @Override
-    public void load(CompoundTag compoundTag) {
-        var listTag = compoundTag.getList("areas", 8);
+    public void load(AreaSavedData savedData, CompoundTag compoundTag) {
 
-        areaIds = new HashSet<>();
-        listTag.forEach(tag -> areaIds.add(ResourceLocation.tryParse(tag.getAsString())));
+        areas = new LazyAreaBVHTree(savedData);
+        areas.load(compoundTag.getCompound("areas"));
 
         priority = compoundTag.getInt("priority");
+    }
+
+    @Override
+    public @Nullable AABB getBoundingBox() {
+        return areas.getBoundingBox();
     }
 
     @Override
@@ -70,35 +65,10 @@ public abstract class CompositeArea implements Area {
     public CompoundTag save() {
         var compoundTag = new CompoundTag();
 
-        var listTag = new ListTag();
-        areaIds.forEach(areaId -> listTag.add(StringTag.valueOf(areaId.toString())));
-
-        compoundTag.put("areas", listTag);
-
+        compoundTag.put("areas", areas.save());
         compoundTag.putInt("priority", priority);
 
         return compoundTag;
-    }
-
-    protected Collection<Area> getAreas(AreaSavedData savedData) {
-        if (cachedAreas != null) {
-            return cachedAreas;
-        }
-
-        cachedAreas = new HashSet<>(areaIds.size());
-
-        var iterator = areaIds.iterator();
-        while (iterator.hasNext()) {
-            var areaId = iterator.next();
-            if (savedData.has(areaId)) {
-                var area = savedData.get(areaId);
-                cachedAreas.add(area);
-            } else {
-                iterator.remove();
-            }
-        }
-
-        return cachedAreas;
     }
 
     @Override
@@ -110,6 +80,6 @@ public abstract class CompositeArea implements Area {
     }
 
     public String toString() {
-        return "CompositeArea " + cachedAreas + " priority: " + priority;
+        return "CompositeArea " + areas + " priority: " + priority;
     }
 }

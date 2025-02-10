@@ -2,6 +2,7 @@ package dev.doublekekse.area_lib;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.bvh.BVHItem;
+import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -28,9 +29,10 @@ public interface Area extends BVHItem {
     /**
      * Loads the area's data from a {@link CompoundTag}.
      *
+     * @param savedData the area saved data. Areas are not loaded yet
      * @param compoundTag the tag containing saved area data
      */
-    void load(CompoundTag compoundTag);
+    void load(AreaSavedData savedData, CompoundTag compoundTag);
 
     /**
      * Sets the color used to render this area.

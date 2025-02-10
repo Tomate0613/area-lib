@@ -13,6 +13,7 @@
   "area_lib.commands.area.delete.success": "Removed area \"%s\" with data %s",
 
   "area_lib.commands.area.error_does_not_exist": "Area \"%s\" does not exist",
+  "area_lib.commands.area.error_composite_sub_area": "Sub areas may not be composite areas",
 
   "area_lib.commands.area.error_not_in_area": "Not in an area",
   "area_lib.commands.area.query.entry": "You are currently in \"%s\"",

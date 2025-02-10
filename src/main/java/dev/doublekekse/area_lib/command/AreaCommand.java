@@ -4,7 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import dev.doublekekse.area_lib.areas.BoxArea;
+import dev.doublekekse.area_lib.areas.CompositeArea;
 import dev.doublekekse.area_lib.areas.UnionArea;
+import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
 import dev.doublekekse.area_lib.command.argument.CompositeAreaArgument;
 import dev.doublekekse.area_lib.data.AreaSavedData;
@@ -55,9 +57,20 @@ public class AreaCommand {
             })))).then(literal("union").then(argument("areas", AREA_LIST_ARGUMENT).executes(ctx -> {
                 var server = ctx.getSource().getServer();
                 var areas = AREA_LIST_ARGUMENT.getList(ctx, "areas");
-
                 var savedData = AreaSavedData.getServerData(server);
-                var area = new UnionArea(new HashSet<>(areas));
+
+                for (var areaId : areas) {
+                    var area = savedData.get(areaId);
+
+                    if (area instanceof CompositeArea) {
+                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_composite_sub_area"));
+
+                        return 0;
+                    }
+                }
+
+                var bvhTree = new LazyAreaBVHTree(savedData, areas);
+                var area = new UnionArea(bvhTree);
 
                 var location = ResourceLocationArgument.getId(ctx, "id");
 
@@ -153,6 +166,13 @@ public class AreaCommand {
                     var area = CompositeAreaArgument.getArea(ctx, "id");
                     var subArea = AreaArgument.getArea(ctx, "sub_area");
 
+
+                    if (subArea.getValue() instanceof CompositeArea) {
+                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_composite_sub_area"));
+
+                        return 0;
+                    }
+
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.getKey().toString(), area.getKey().toString()), false);
 
                     area.getValue().addSubArea(subArea);
@@ -164,9 +184,9 @@ public class AreaCommand {
 
                     var savedData = AreaSavedData.getServerData(server);
                     var area = CompositeAreaArgument.getArea(ctx, "id");
-                    var subArea = AreaArgument.getArea(ctx, "sub_area");
+                    var subArea = AreaArgument.getAreaId(ctx, "sub_area");
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.getKey().toString(), area.getKey().toString()), false);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.getKey().toString()), false);
 
                     area.getValue().removeSubArea(subArea);
                     saveAndSync(savedData, server);

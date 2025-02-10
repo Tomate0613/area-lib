@@ -1,6 +1,5 @@
 package dev.doublekekse.area_lib.bvh;
 
-import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -20,8 +19,7 @@ public interface BVHItem {
      * Gets the bounding box of the item, if not empty. The bounding box is used for
      * spatial partitioning and optimization in BVH structures.
      *
-     * @param savedData the saved area data that may influence the bounding box
      * @return the bounding box as an {@link AABB}, or null if empty
      */
-    @Nullable AABB getBoundingBox(AreaSavedData savedData);
+    @Nullable AABB getBoundingBox();
 }

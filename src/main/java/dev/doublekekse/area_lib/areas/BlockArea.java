@@ -41,7 +41,7 @@ public class BlockArea implements Area {
     }
 
     @Override
-    public void load(CompoundTag compoundTag) {
+    public void load(AreaSavedData savedData, CompoundTag compoundTag) {
         var listTag = compoundTag.getList("aabbs", 10);
 
         aabbs = new ArrayList<>();
@@ -107,7 +107,7 @@ public class BlockArea implements Area {
     }
 
     @Override
-    public @Nullable AABB getBoundingBox(AreaSavedData savedData) {
+    public @Nullable AABB getBoundingBox() {
         return null;
     }
 

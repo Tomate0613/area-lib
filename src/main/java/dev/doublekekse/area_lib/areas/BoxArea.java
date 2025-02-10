@@ -35,7 +35,7 @@ public class BoxArea implements Area {
     }
 
     @Override
-    public void load(CompoundTag compoundTag) {
+    public void load(AreaSavedData savedData, CompoundTag compoundTag) {
         aabb = CompoundUtils.toAABB(compoundTag.getCompound("aabb"));
 
         r = compoundTag.getFloat("r");
@@ -89,7 +89,7 @@ public class BoxArea implements Area {
     }
 
     @Override
-    public AABB getBoundingBox(AreaSavedData savedData) {
+    public AABB getBoundingBox() {
         return aabb;
     }
 

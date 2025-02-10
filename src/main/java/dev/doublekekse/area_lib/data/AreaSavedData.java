@@ -3,7 +3,6 @@ package dev.doublekekse.area_lib.data;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaTypeRegistry;
 import dev.doublekekse.area_lib.areas.CompositeArea;
-import dev.doublekekse.area_lib.util.Pair;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -40,7 +39,7 @@ public class AreaSavedData extends SavedData {
             var tag = compoundTag.getCompound(key);
 
             var area = AreaTypeRegistry.getArea(ResourceLocation.parse(tag.getString("type")));
-            area.load(tag.getCompound("data"));
+            area.load(data, tag.getCompound("data"));
 
             data.put(ResourceLocation.parse(key), area);
         }
@@ -72,7 +71,7 @@ public class AreaSavedData extends SavedData {
         // This is definitely not an ideal way to deal with this, but it works
         for (var entry : areas.entrySet()) {
             if (entry.getValue() instanceof CompositeArea compositeArea) {
-                compositeArea.removeSubArea(new Pair<>(id, removedArea));
+                compositeArea.removeSubArea(id);
             }
         }
 

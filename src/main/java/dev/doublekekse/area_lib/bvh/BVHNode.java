@@ -1,6 +1,5 @@
 package dev.doublekekse.area_lib.bvh;
 
-import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.util.AABBUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -14,27 +13,27 @@ public class BVHNode<T extends BVHItem> {
     private BVHNode<T> right;
     private final List<T> leafItems;
 
-    public BVHNode(AreaSavedData savedData, List<T> items) {
+    public BVHNode(List<T> items) {
         if (items.size() <= 2) {
             this.leafItems = items;
             this.boundingBox = items.stream()
-                .map((item) -> item.getBoundingBox(savedData))
+                .map(BVHItem::getBoundingBox)
                 .filter(Objects::nonNull)
                 .reduce(AABBUtils::encapsulate)
                 .orElseThrow();
         } else {
             this.leafItems = null;
             this.boundingBox = items.stream()
-                .map((item) -> item.getBoundingBox(savedData))
+                .map(BVHItem::getBoundingBox)
                 .filter(Objects::nonNull)
                 .reduce(AABBUtils::encapsulate)
                 .orElseThrow();
 
             var longestAxis = AABBUtils.longestAxis(boundingBox);
-            items.sort(Comparator.comparingDouble(a -> Objects.requireNonNull(a.getBoundingBox(savedData)).getCenter().get(longestAxis)));
+            items.sort(Comparator.comparingDouble(a -> Objects.requireNonNull(a.getBoundingBox()).getCenter().get(longestAxis)));
             int mid = items.size() / 2;
-            this.left = new BVHNode<>(savedData, items.subList(0, mid));
-            this.right = new BVHNode<>(savedData, items.subList(mid, items.size()));
+            this.left = new BVHNode<>(items.subList(0, mid));
+            this.right = new BVHNode<>(items.subList(mid, items.size()));
         }
     }
 
@@ -75,6 +74,10 @@ public class BVHNode<T extends BVHItem> {
         return result;
     }
 
+    public AABB getBoundingBox() {
+        return boundingBox;
+    }
+
     public List<T> listAllAreas() {
         List<T> allAreas = new ArrayList<>();
 
@@ -92,17 +95,31 @@ public class BVHNode<T extends BVHItem> {
         return allAreas;
     }
 
-    public BVHNode<T> with(AreaSavedData savedData, T item) {
+    public BVHNode<T> with(T item) {
         var items = listAllAreas();
         items.add(item);
 
-        return new BVHNode<>(savedData, items);
+        return new BVHNode<>(items);
     }
 
-    public BVHNode<T> without(AreaSavedData savedData, T item) {
+    public BVHNode<T> withAll(Collection<T> item) {
+        var items = listAllAreas();
+        items.addAll(item);
+
+        return new BVHNode<>(items);
+    }
+
+    public BVHNode<T> without(T item) {
         var items = listAllAreas();
         items.remove(item);
 
-        return new BVHNode<>(savedData, items);
+        return new BVHNode<>(items);
+    }
+
+    public BVHNode<T> withoutAll(Collection<T> item) {
+        var items = listAllAreas();
+        items.removeAll(item);
+
+        return new BVHNode<>(items);
     }
 }

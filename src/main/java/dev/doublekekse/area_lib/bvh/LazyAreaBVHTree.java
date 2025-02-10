@@ -8,60 +8,86 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class AreaBVHTree {
-    private BVHNode<Area> node;
+public class LazyAreaBVHTree {
+    private @Nullable BVHNode<Area> node;
     private final List<ResourceLocation> areaIds = new ArrayList<>();
     private final AreaSavedData savedData;
 
-    public AreaBVHTree(AreaSavedData savedData) {
+    public LazyAreaBVHTree(AreaSavedData savedData) {
         this.savedData = savedData;
     }
 
+    public LazyAreaBVHTree(AreaSavedData savedData, List<ResourceLocation> areaIds) {
+        this.savedData = savedData;
+        this.areaIds.addAll(areaIds);
+    }
+
     public void add(ResourceLocation areaId) {
-        var area = savedData.get(areaId);
         areaIds.add(areaId);
 
         if (node == null) {
-            node = new BVHNode<>(savedData, Collections.singletonList(area));
+            return;
         }
 
-        node = node.with(savedData, area);
+        var area = savedData.get(areaId);
+        node = node.with(area);
     }
 
     public void remove(ResourceLocation areaId) {
-        var area = savedData.get(areaId);
         areaIds.remove(areaId);
 
         if (node == null) {
             return;
         }
 
-        node = node.without(savedData, area);
+        var area = savedData.get(areaId);
+        node = node.without(area);
+    }
+
+    public AreaSavedData getSavedData() {
+        return savedData;
+    }
+
+    private void build() {
+        var areas = areaIds.stream().map(savedData::get).filter(Objects::nonNull).toList();
+        node = new BVHNode<>(areas);
     }
 
     public boolean contains(Level level, Vec3 position) {
-        if (node == null) {
+        if (areaIds.isEmpty()) {
             return false;
         }
+        if (node == null) {
+            build();
+        }
+
 
         return node.contains(level, position);
     }
 
     public List<Area> findAreasContaining(Level level, Vec3 position) {
-        if (node == null) {
+        if (areaIds.isEmpty()) {
             return Collections.emptyList();
+        }
+        if (node == null) {
+            build();
         }
 
         return node.findAreasContaining(level, position);
     }
 
     public List<Area> listAllAreas() {
-        if (node == null) {
+        if (areaIds.isEmpty()) {
             return Collections.emptyList();
+        }
+        if (node == null) {
+            build();
         }
 
         return node.listAllAreas();
@@ -69,6 +95,14 @@ public class AreaBVHTree {
 
     public List<ResourceLocation> getAreaIds() {
         return areaIds;
+    }
+
+    public AABB getBoundingBox() {
+        if (node == null) {
+            build();
+        }
+
+        return node.getBoundingBox();
     }
 
     public CompoundTag save() {
@@ -93,8 +127,12 @@ public class AreaBVHTree {
 
             areaIds.add(areaId);
         }
+    }
 
-        var areas = areaIds.stream().map(savedData::get).filter(Objects::nonNull).toList();
-        node = new BVHNode<>(savedData, areas);
+    @Override
+    public String toString() {
+        return "LazyAreaBVHTree{" +
+            "areaIds=" + areaIds +
+            '}';
     }
 }
