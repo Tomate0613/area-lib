@@ -17,6 +17,7 @@ import java.util.*;
 
 public class AreaSavedData extends SavedData {
     private final Map<ResourceLocation, Area> areas = new HashMap<>();
+    private boolean isInitialized = true;
 
     @Override
     public @NotNull CompoundTag save(CompoundTag compoundTag, HolderLookup.Provider provider) {
@@ -34,6 +35,7 @@ public class AreaSavedData extends SavedData {
 
     public static AreaSavedData load(CompoundTag compoundTag, HolderLookup.Provider provider) {
         var data = new AreaSavedData();
+        data.isInitialized = false;
 
         for (String key : compoundTag.getAllKeys()) {
             var tag = compoundTag.getCompound(key);
@@ -44,14 +46,23 @@ public class AreaSavedData extends SavedData {
             data.put(ResourceLocation.parse(key), area);
         }
 
+        data.isInitialized = true;
         return data;
     }
 
     public Collection<Area> getAreas() {
+        if (!isInitialized) {
+            throw new IllegalStateException("Areas have not been initialized");
+        }
+
         return areas.values();
     }
 
     public Set<Map.Entry<ResourceLocation, Area>> getAreaEntries() {
+        if (!isInitialized) {
+            throw new IllegalStateException("Areas have not been initialized");
+        }
+
         return areas.entrySet();
     }
 
@@ -61,6 +72,10 @@ public class AreaSavedData extends SavedData {
     }
 
     public Area get(ResourceLocation id) {
+        if (!isInitialized) {
+            throw new IllegalStateException("Areas have not been initialized");
+        }
+
         return areas.get(id);
     }
 
@@ -79,10 +94,18 @@ public class AreaSavedData extends SavedData {
     }
 
     public boolean has(ResourceLocation id) {
+        if (!isInitialized) {
+            throw new IllegalStateException("Areas have not been initialized");
+        }
+
         return areas.containsKey(id);
     }
 
     public Map.Entry<ResourceLocation, Area> find(Level level, Vec3 pos) {
+        if (!isInitialized) {
+            throw new IllegalStateException("Areas have not been initialized");
+        }
+
         for (var entry : areas.entrySet()) {
             if (entry.getValue().contains(level, pos)) {
                 return entry;
