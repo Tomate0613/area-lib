@@ -26,7 +26,7 @@ public abstract class CompositeArea implements Area {
     }
 
     public void addSubArea(Map.Entry<ResourceLocation, ? extends Area> area) {
-        if(area.getValue() instanceof CompositeArea) {
+        if (area.getValue() instanceof CompositeArea) {
             throw new IllegalArgumentException("Sub areas may not be composite areas");
         }
 
