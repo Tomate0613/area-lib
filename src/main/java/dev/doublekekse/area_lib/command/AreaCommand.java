@@ -19,8 +19,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.phys.AABB;
 
-import java.util.HashSet;
-
 import static dev.doublekekse.area_lib.AreaLib.AREA_LIST_ARGUMENT;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
@@ -49,7 +47,7 @@ public class AreaCommand {
                 }
 
                 savedData.put(location, area);
-                saveAndSync(savedData, server);
+                sync(savedData, server);
 
                 ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", location.toString()), true);
 
@@ -81,7 +79,7 @@ public class AreaCommand {
                 }
 
                 savedData.put(location, area);
-                saveAndSync(savedData, server);
+                sync(savedData, server);
 
                 ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", location.toString()), true);
 
@@ -99,7 +97,8 @@ public class AreaCommand {
 
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.priority.success", area.getKey().toString(), priority), true);
 
-                    saveAndSync(savedData, server);
+                    sync(savedData, server);
+                    savedData.updated(area.getKey(), area.getValue());
 
                     return 1;
                 }))).then(literal("color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
@@ -117,7 +116,8 @@ public class AreaCommand {
 
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.getKey().toString()), true);
 
-                    saveAndSync(savedData, server);
+                    sync(savedData, server);
+                    savedData.updated(area.getKey(), area.getValue());
 
                     return 1;
                 })))))
@@ -130,7 +130,7 @@ public class AreaCommand {
 
                 var area = savedData.remove(location);
 
-                saveAndSync(savedData, server);
+                sync(savedData, server);
 
                 ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", location.toString(), area.toString()), true);
 
@@ -176,7 +176,8 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.getKey().toString(), area.getKey().toString()), false);
 
                     area.getValue().addSubArea(subArea);
-                    saveAndSync(savedData, server);
+                    sync(savedData, server);
+                    savedData.updated(area.getKey(), area.getValue());
 
                     return 1;
                 }))).then(literal("remove").then(argument("sub_area", AreaArgument.area()).executes(ctx -> {
@@ -189,7 +190,8 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.getKey().toString()), false);
 
                     area.getValue().removeSubArea(subArea);
-                    saveAndSync(savedData, server);
+                    sync(savedData, server);
+                    savedData.updated(area.getKey(), area.getValue());
 
                     return 1;
                 }))))
@@ -197,9 +199,7 @@ public class AreaCommand {
         );
     }
 
-    static void saveAndSync(AreaSavedData savedData, MinecraftServer server) {
-        savedData.setDirty();
-
+    static void sync(AreaSavedData savedData, MinecraftServer server) {
         server.getPlayerList().getPlayers().forEach(player -> ServerPlayNetworking.send(player, new ClientboundAreaSyncPacket(savedData)));
     }
 }

@@ -14,8 +14,10 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public class AreaSavedData extends SavedData {
+    private final List<BiConsumer<ResourceLocation, Area>> changeListeners = new ArrayList<>();
     private final Map<ResourceLocation, Area> areas = new HashMap<>();
     private boolean isInitialized = true;
 
@@ -66,9 +68,10 @@ public class AreaSavedData extends SavedData {
         return areas.entrySet();
     }
 
-    public void put(ResourceLocation key, Area area) {
-        areas.put(key, area);
-        setDirty();
+    public void put(ResourceLocation id, Area area) {
+        areas.put(id, area);
+
+        updated(id, area);
     }
 
     public Area get(ResourceLocation id) {
@@ -81,6 +84,8 @@ public class AreaSavedData extends SavedData {
 
     public Area remove(ResourceLocation id) {
         var removedArea = areas.remove(id);
+
+        updated(id, removedArea);
 
         // Remove area from sub-area caches
         // This is definitely not an ideal way to deal with this, but it works
@@ -113,6 +118,18 @@ public class AreaSavedData extends SavedData {
         }
 
         return null;
+    }
+
+    public void updated(ResourceLocation id, Area area) {
+        for (var changeListener : changeListeners) {
+            changeListener.accept(id, area);
+        }
+
+        setDirty();
+    }
+
+    public void addChangeListener(BiConsumer<ResourceLocation, Area> listener) {
+        changeListeners.add(listener);
     }
 
     public static AreaSavedData getServerData(MinecraftServer server) {
