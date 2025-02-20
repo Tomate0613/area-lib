@@ -21,15 +21,9 @@ import java.util.List;
 import java.util.Objects;
 
 @Deprecated
-public class BlockArea implements Area {
+public class BlockArea extends Area {
     public List<AABB> aabbs;
     public ResourceLocation dimension;
-
-    float r = 1;
-    float g = 1;
-    float b = 1;
-
-    int priority = 0;
 
     public BlockArea(ResourceLocation dimension, AABB... aabb) {
         this.dimension = dimension;
@@ -42,18 +36,14 @@ public class BlockArea implements Area {
 
     @Override
     public void load(AreaSavedData savedData, CompoundTag compoundTag) {
+        super.load(savedData, compoundTag);
+
         var listTag = compoundTag.getList("aabbs", 10);
 
         aabbs = new ArrayList<>();
         listTag.forEach(tag -> aabbs.add(CompoundUtils.toAABB((CompoundTag) tag)));
 
-        r = compoundTag.getFloat("r");
-        g = compoundTag.getFloat("g");
-        b = compoundTag.getFloat("b");
-
         dimension = ResourceLocation.parse(compoundTag.getString("dimension"));
-
-        priority = compoundTag.getInt("priority");
     }
 
     @Override
@@ -62,31 +52,14 @@ public class BlockArea implements Area {
     }
 
     @Override
-    public int getPriority() {
-        return priority;
-    }
-
-    @Override
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
-    @Override
     public CompoundTag save() {
-        var compoundTag = new CompoundTag();
+        var compoundTag = super.save();
 
         var listTag = new ListTag();
         aabbs.forEach(aabb -> listTag.add(CompoundUtils.fromAABB(aabb)));
 
         compoundTag.put("aabbs", listTag);
-
-        compoundTag.putFloat("r", r);
-        compoundTag.putFloat("g", g);
-        compoundTag.putFloat("b", b);
-
         compoundTag.putString("dimension", dimension.toString());
-
-        compoundTag.putInt("priority", priority);
 
         return compoundTag;
     }
@@ -120,13 +93,6 @@ public class BlockArea implements Area {
         aabbs.forEach(aabb -> {
             LevelRenderer.renderLineBox(poseStack, context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
         });
-    }
-
-    @Override
-    public void setColor(float r, float g, float b) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
     }
 
     public String toString() {

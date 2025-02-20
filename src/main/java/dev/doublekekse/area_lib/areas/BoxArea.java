@@ -16,15 +16,9 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
 
-public class BoxArea implements Area {
+public class BoxArea extends Area {
     AABB aabb;
     ResourceLocation dimension;
-
-    float r = 1;
-    float g = 1;
-    float b = 1;
-
-    int priority = 0;
 
     public BoxArea(ResourceLocation dimension, AABB aabb) {
         this.dimension = dimension;
@@ -36,15 +30,10 @@ public class BoxArea implements Area {
 
     @Override
     public void load(AreaSavedData savedData, CompoundTag compoundTag) {
+        super.load(savedData, compoundTag);
+
         aabb = CompoundUtils.toAABB(compoundTag.getCompound("aabb"));
-
-        r = compoundTag.getFloat("r");
-        g = compoundTag.getFloat("g");
-        b = compoundTag.getFloat("b");
-
         dimension = ResourceLocation.parse(compoundTag.getString("dimension"));
-
-        priority = compoundTag.getInt("priority");
     }
 
     @Override
@@ -53,28 +42,11 @@ public class BoxArea implements Area {
     }
 
     @Override
-    public int getPriority() {
-        return priority;
-    }
-
-    @Override
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
-    @Override
     public CompoundTag save() {
-        var compoundTag = new CompoundTag();
+        var compoundTag = super.save();
 
         compoundTag.put("aabb", CompoundUtils.fromAABB(aabb));
-
-        compoundTag.putFloat("r", r);
-        compoundTag.putFloat("g", g);
-        compoundTag.putFloat("b", b);
-
         compoundTag.putString("dimension", dimension.toString());
-
-        compoundTag.putInt("priority", priority);
 
         return compoundTag;
     }
@@ -100,13 +72,6 @@ public class BoxArea implements Area {
         }
 
         LevelRenderer.renderLineBox(poseStack, context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
-    }
-
-    @Override
-    public void setColor(float r, float g, float b) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
     }
 
     public String toString() {

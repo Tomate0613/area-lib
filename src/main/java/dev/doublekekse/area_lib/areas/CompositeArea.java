@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public abstract class CompositeArea implements Area {
+public abstract class CompositeArea extends Area {
     protected LazyAreaBVHTree areas;
 
     int priority = 0;
@@ -39,6 +39,7 @@ public abstract class CompositeArea implements Area {
 
     @Override
     public void load(AreaSavedData savedData, CompoundTag compoundTag) {
+        super.load(savedData, compoundTag);
 
         areas = new LazyAreaBVHTree(savedData);
         areas.load(compoundTag.getCompound("areas"));
@@ -47,23 +48,8 @@ public abstract class CompositeArea implements Area {
     }
 
     @Override
-    public @Nullable AABB getBoundingBox() {
-        return areas.getBoundingBox();
-    }
-
-    @Override
-    public int getPriority() {
-        return priority;
-    }
-
-    @Override
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
-    @Override
     public CompoundTag save() {
-        var compoundTag = new CompoundTag();
+        var compoundTag = super.save();
 
         compoundTag.put("areas", areas.save());
         compoundTag.putInt("priority", priority);
@@ -72,11 +58,12 @@ public abstract class CompositeArea implements Area {
     }
 
     @Override
-    public void render(WorldRenderContext context, PoseStack poseStack) {
+    public @Nullable AABB getBoundingBox() {
+        return areas.getBoundingBox();
     }
 
     @Override
-    public void setColor(float r, float g, float b) {
+    public void render(WorldRenderContext context, PoseStack poseStack) {
     }
 
     public String toString() {
