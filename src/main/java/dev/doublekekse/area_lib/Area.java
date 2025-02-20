@@ -2,11 +2,17 @@ package dev.doublekekse.area_lib;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.bvh.BVHItem;
+import dev.doublekekse.area_lib.component.AreaDataComponent;
+import dev.doublekekse.area_lib.component.AreaDataComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
+import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Area implements BVHItem {
     protected float r = 1;
@@ -14,6 +20,21 @@ public abstract class Area implements BVHItem {
     protected float b = 1;
 
     protected int priority = 0;
+    private final Map<AreaDataComponentType<?>, AreaDataComponent> components = new HashMap<>();
+
+    @SuppressWarnings("unchecked")
+    public <T extends AreaDataComponent> T get(AreaDataComponentType<T> type) {
+        return (T) components.get(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends AreaDataComponent> T getOrDefault(AreaDataComponentType<T> type, T defaultValue) {
+        return (T) components.getOrDefault(type, defaultValue);
+    }
+
+    public <T extends AreaDataComponent> void put(AreaDataComponentType<T> type, T component) {
+        components.put(type, component);
+    }
 
     /**
      * Checks whether the given entity is within the area.
@@ -39,6 +60,12 @@ public abstract class Area implements BVHItem {
 
         compoundTag.putInt("priority", priority);
 
+        var componentsTag = new CompoundTag();
+        for(var entry : components.entrySet()) {
+            componentsTag.put(entry.getKey().id().toString(), entry.getValue().save());
+        }
+        compoundTag.put("components", componentsTag);
+
         return compoundTag;
     }
 
@@ -54,6 +81,21 @@ public abstract class Area implements BVHItem {
         b = compoundTag.getFloat("b");
 
         priority = compoundTag.getInt("priority");
+
+        var componentsTag = compoundTag.getCompound("components");
+        for(var key : componentsTag.getAllKeys()) {
+            var id = ResourceLocation.tryParse(key);
+            var type = AreaDataComponentTypeRegistry.get(id);
+
+            if(type == null) {
+                continue;
+            }
+
+            var component = type.factory().get();
+            component.load(savedData, componentsTag.getCompound(key));
+
+            components.put(type, component);
+        }
     }
 
     /**
