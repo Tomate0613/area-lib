@@ -1,5 +1,6 @@
-package dev.doublekekse.area_lib;
+package dev.doublekekse.area_lib.registry;
 
+import dev.doublekekse.area_lib.Area;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class AreaTypeRegistry {
         }
     }
 
-    public static void register(Supplier<Area> areaSupplier, ResourceLocation location) {
-        areas.put(location, areaSupplier);
+    public static void register(Supplier<Area> areaFactory, ResourceLocation location) {
+        areas.put(location, areaFactory);
     }
 }
