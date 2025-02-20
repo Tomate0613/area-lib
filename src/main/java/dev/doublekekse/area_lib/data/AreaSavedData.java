@@ -1,7 +1,7 @@
 package dev.doublekekse.area_lib.data;
 
 import dev.doublekekse.area_lib.Area;
-import dev.doublekekse.area_lib.AreaTypeRegistry;
+import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import dev.doublekekse.area_lib.areas.CompositeArea;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;

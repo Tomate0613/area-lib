@@ -10,6 +10,7 @@ import dev.doublekekse.area_lib.command.argument.ListArgument;
 import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
+import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
