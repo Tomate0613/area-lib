@@ -56,8 +56,8 @@ public class ListArgument<T> implements ArgumentType<List<T>> {
         return listArgument;
     }
 
+    @SuppressWarnings("unchecked")
     public List<T> getList(CommandContext<?> context, String name) {
-        //noinspection unchecked
-        return context.getArgument(name, List.class);
+        return (List<T>)context.getArgument(name, List.class);
     }
 }
