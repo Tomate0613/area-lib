@@ -1,8 +1,10 @@
 package dev.doublekekse.area_lib.data;
 
 import dev.doublekekse.area_lib.Area;
+import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import dev.doublekekse.area_lib.areas.CompositeArea;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -14,10 +16,10 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class AreaSavedData extends SavedData {
-    private final List<BiConsumer<ResourceLocation, Area>> changeListeners = new ArrayList<>();
+    private final List<Consumer<Area>> changeListeners = new ArrayList<>();
     private final Map<ResourceLocation, Area> areas = new HashMap<>();
     private boolean isInitialized = true;
 
@@ -41,11 +43,12 @@ public class AreaSavedData extends SavedData {
 
         for (String key : compoundTag.getAllKeys()) {
             var tag = compoundTag.getCompound(key);
+            var id = ResourceLocation.parse(key);
 
-            var area = AreaTypeRegistry.getArea(ResourceLocation.parse(tag.getString("type")));
+            var area = AreaTypeRegistry.getArea(ResourceLocation.parse(tag.getString("type")), data, id);
             area.load(data, tag.getCompound("data"));
 
-            data.put(ResourceLocation.parse(key), area);
+            data.areas.put(id, area);
         }
 
         data.isInitialized = true;
@@ -68,10 +71,10 @@ public class AreaSavedData extends SavedData {
         return areas.entrySet();
     }
 
-    public void put(ResourceLocation id, Area area) {
-        areas.put(id, area);
+    public void put(MinecraftServer server, Area area) {
+        areas.put(area.getId(), area);
 
-        updated(id, area);
+        invalidate(server, area);
     }
 
     public Area get(ResourceLocation id) {
@@ -82,10 +85,10 @@ public class AreaSavedData extends SavedData {
         return areas.get(id);
     }
 
-    public Area remove(ResourceLocation id) {
+    public Area remove(MinecraftServer server, ResourceLocation id) {
         var removedArea = areas.remove(id);
 
-        updated(id, removedArea);
+        invalidate(server, removedArea);
 
         // Remove area from sub-area caches
         // This is definitely not an ideal way to deal with this, but it works
@@ -120,15 +123,20 @@ public class AreaSavedData extends SavedData {
         return null;
     }
 
-    public void updated(ResourceLocation id, Area area) {
+    public void invalidate(MinecraftServer server, Area area) {
         for (var changeListener : changeListeners) {
-            changeListener.accept(id, area);
+            changeListener.accept(area);
         }
 
         setDirty();
+        sync(server);
     }
 
-    public void addChangeListener(BiConsumer<ResourceLocation, Area> listener) {
+    private void sync(MinecraftServer server) {
+        server.getPlayerList().getPlayers().forEach(player -> ServerPlayNetworking.send(player, new ClientboundAreaSyncPacket(this)));
+    }
+
+    public void addChangeListener(Consumer<Area> listener) {
         changeListeners.add(listener);
     }
 

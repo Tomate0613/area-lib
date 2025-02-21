@@ -17,12 +17,14 @@ public abstract class CompositeArea extends Area {
 
     int priority = 0;
 
-    public CompositeArea(LazyAreaBVHTree areas) {
+    public CompositeArea(AreaSavedData savedData, ResourceLocation id, LazyAreaBVHTree areas) {
+        super(savedData, id);
+
         this.areas = areas;
     }
 
-    public CompositeArea() {
-
+    public CompositeArea(AreaSavedData savedData, ResourceLocation id) {
+        super(savedData, id);
     }
 
     public void addSubArea(Map.Entry<ResourceLocation, ? extends Area> area) {

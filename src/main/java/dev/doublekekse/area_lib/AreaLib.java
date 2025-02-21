@@ -1,6 +1,5 @@
 package dev.doublekekse.area_lib;
 
-import dev.doublekekse.area_lib.areas.BlockArea;
 import dev.doublekekse.area_lib.areas.BoxArea;
 import dev.doublekekse.area_lib.areas.UnionArea;
 import dev.doublekekse.area_lib.command.AreaCommand;
@@ -41,7 +40,6 @@ public class AreaLib implements ModInitializer {
             packetSender.sendPacket(new ClientboundAreaSyncPacket(savedData));
         });
 
-        AreaTypeRegistry.register(BlockArea::new, id("block"));
         AreaTypeRegistry.register(BoxArea::new, id("box"));
         AreaTypeRegistry.register(UnionArea::new, id("union"));
 

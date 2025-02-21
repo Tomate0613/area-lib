@@ -35,21 +35,19 @@ public class AreaCommand {
                 var to = Vec3Argument.getVec3(ctx, "to");
 
                 var savedData = AreaSavedData.getServerData(server);
+                var id = ResourceLocationArgument.getId(ctx, "id");
 
-                var area = new BoxArea(level.dimension().location(), new AABB(from, to));
+                var area = new BoxArea(savedData, id, level.dimension().location(), new AABB(from, to));
 
-                var location = ResourceLocationArgument.getId(ctx, "id");
-
-                if (savedData.has(location)) {
+                if (savedData.has(id)) {
                     ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.create.error_existing"));
 
                     return 0;
                 }
 
-                savedData.put(location, area);
-                sync(savedData, server);
+                savedData.put(server, area);
 
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", location.toString()), true);
+                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", id.toString()), true);
 
                 return 1;
             })))).then(literal("union").then(argument("areas", AREA_LIST_ARGUMENT).executes(ctx -> {
@@ -68,20 +66,19 @@ public class AreaCommand {
                 }
 
                 var bvhTree = new LazyAreaBVHTree(savedData, areas);
-                var area = new UnionArea(bvhTree);
+                var id = ResourceLocationArgument.getId(ctx, "id");
 
-                var location = ResourceLocationArgument.getId(ctx, "id");
+                var area = new UnionArea(savedData, id, bvhTree);
 
-                if (savedData.has(location)) {
+                if (savedData.has(id)) {
                     ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.create.error_existing"));
 
                     return 0;
                 }
 
-                savedData.put(location, area);
-                sync(savedData, server);
+                savedData.put(server, area);
 
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", location.toString()), true);
+                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", id.toString()), true);
 
                 return 1;
             }))))).then(literal("modify").then(argument("id", AreaArgument.area())
@@ -97,8 +94,7 @@ public class AreaCommand {
 
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.priority.success", area.getKey().toString(), priority), true);
 
-                    sync(savedData, server);
-                    savedData.updated(area.getKey(), area.getValue());
+                    savedData.invalidate(server, area.getValue());
 
                     return 1;
                 }))).then(literal("color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
@@ -116,8 +112,7 @@ public class AreaCommand {
 
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.getKey().toString()), true);
 
-                    sync(savedData, server);
-                    savedData.updated(area.getKey(), area.getValue());
+                    savedData.invalidate(server, area.getValue());
 
                     return 1;
                 })))))
@@ -128,9 +123,7 @@ public class AreaCommand {
 
                 var location = AreaArgument.getAreaId(ctx, "id");
 
-                var area = savedData.remove(location);
-
-                sync(savedData, server);
+                var area = savedData.remove(server, location);
 
                 ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", location.toString(), area.toString()), true);
 
@@ -176,8 +169,7 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.getKey().toString(), area.getKey().toString()), false);
 
                     area.getValue().addSubArea(subArea);
-                    sync(savedData, server);
-                    savedData.updated(area.getKey(), area.getValue());
+                    savedData.invalidate(server, area.getValue());
 
                     return 1;
                 }))).then(literal("remove").then(argument("sub_area", AreaArgument.area()).executes(ctx -> {
@@ -190,16 +182,11 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.getKey().toString()), false);
 
                     area.getValue().removeSubArea(subArea);
-                    sync(savedData, server);
-                    savedData.updated(area.getKey(), area.getValue());
+                    savedData.invalidate(server, area.getValue());
 
                     return 1;
                 }))))
             )
         );
-    }
-
-    static void sync(AreaSavedData savedData, MinecraftServer server) {
-        server.getPlayerList().getPlayers().forEach(player -> ServerPlayNetworking.send(player, new ClientboundAreaSyncPacket(savedData)));
     }
 }

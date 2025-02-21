@@ -20,12 +20,15 @@ public class BoxArea extends Area {
     AABB aabb;
     ResourceLocation dimension;
 
-    public BoxArea(ResourceLocation dimension, AABB aabb) {
+    public BoxArea(AreaSavedData savedData, ResourceLocation id, ResourceLocation dimension, AABB aabb) {
+        super(savedData, id);
+
         this.dimension = dimension;
         this.aabb = aabb;
     }
 
-    public BoxArea() {
+    public BoxArea(AreaSavedData savedData, ResourceLocation id) {
+        super(savedData, id);
     }
 
     @Override

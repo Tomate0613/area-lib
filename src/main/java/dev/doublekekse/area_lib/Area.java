@@ -20,7 +20,16 @@ public abstract class Area implements BVHItem {
     protected float b = 1;
 
     protected int priority = 0;
+
+    protected final AreaSavedData savedData;
+    protected final ResourceLocation id;
+
     private final Map<AreaDataComponentType<?>, AreaDataComponent> components = new Reference2ObjectArrayMap<>();
+
+    public Area(AreaSavedData savedData, ResourceLocation id) {
+        this.savedData = savedData;
+        this.id = id;
+    }
 
     @SuppressWarnings("unchecked")
     public <T extends AreaDataComponent> T get(AreaDataComponentType<T> type) {
@@ -61,7 +70,7 @@ public abstract class Area implements BVHItem {
         compoundTag.putInt("priority", priority);
 
         var componentsTag = new CompoundTag();
-        for(var entry : components.entrySet()) {
+        for (var entry : components.entrySet()) {
             componentsTag.put(entry.getKey().id().toString(), entry.getValue().save());
         }
         compoundTag.put("components", componentsTag);
@@ -83,11 +92,11 @@ public abstract class Area implements BVHItem {
         priority = compoundTag.getInt("priority");
 
         var componentsTag = compoundTag.getCompound("components");
-        for(var key : componentsTag.getAllKeys()) {
+        for (var key : componentsTag.getAllKeys()) {
             var id = ResourceLocation.tryParse(key);
             var type = AreaDataComponentTypeRegistry.get(id);
 
-            if(type == null) {
+            if (type == null) {
                 continue;
             }
 
@@ -137,6 +146,10 @@ public abstract class Area implements BVHItem {
      * @param poseStack the pose stack used for transformations
      */
     public abstract void render(WorldRenderContext context, PoseStack poseStack);
+
+    public ResourceLocation getId() {
+        return id;
+    }
 
     /**
      * Gets the unique type identifier of this type of area.
