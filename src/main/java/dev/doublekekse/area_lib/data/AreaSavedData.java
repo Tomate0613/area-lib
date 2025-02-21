@@ -14,6 +14,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -94,7 +95,7 @@ public class AreaSavedData extends SavedData {
         // This is definitely not an ideal way to deal with this, but it works
         for (var entry : areas.entrySet()) {
             if (entry.getValue() instanceof CompositeArea compositeArea) {
-                compositeArea.removeSubArea(area);
+                compositeArea.removeSubArea(null, area);
             }
         }
     }
@@ -121,13 +122,16 @@ public class AreaSavedData extends SavedData {
         return null;
     }
 
-    public void invalidate(MinecraftServer server, Area area) {
+    public void invalidate(@Nullable MinecraftServer server, Area area) {
         for (var changeListener : changeListeners) {
             changeListener.accept(area);
         }
 
         setDirty();
-        sync(server);
+
+        if (server != null) {
+            sync(server);
+        }
     }
 
     private void sync(MinecraftServer server) {

@@ -10,7 +10,9 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -41,8 +43,14 @@ public abstract class Area implements BVHItem {
         return (T) components.getOrDefault(type, defaultValue);
     }
 
-    public <T extends AreaDataComponent> void put(AreaDataComponentType<T> type, T component) {
+    public <T extends AreaDataComponent> void put(@Nullable MinecraftServer server, AreaDataComponentType<T> type, T component) {
         components.put(type, component);
+
+        invalidate(server);
+    }
+
+    public void invalidate(@Nullable MinecraftServer server) {
+        savedData.invalidate(server, this);
     }
 
     /**
@@ -113,10 +121,12 @@ public abstract class Area implements BVHItem {
      * @param g the green component (0.0 - 1.0)
      * @param b the blue component (0.0 - 1.0)
      */
-    public final void setColor(float r, float g, float b) {
+    public final void setColor(@Nullable MinecraftServer server, float r, float g, float b) {
         this.r = r;
         this.g = g;
         this.b = b;
+
+        invalidate(server);
     }
 
     /**
@@ -134,8 +144,9 @@ public abstract class Area implements BVHItem {
      *
      * @param priority the new priority value
      */
-    public final void setPriority(int priority) {
+    public final void setPriority(@Nullable MinecraftServer server, int priority) {
         this.priority = priority;
+        invalidate(server);
     }
 
     /**
