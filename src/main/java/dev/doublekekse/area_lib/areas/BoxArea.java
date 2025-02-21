@@ -32,8 +32,8 @@ public class BoxArea extends Area {
     }
 
     @Override
-    public void load(AreaSavedData savedData, CompoundTag compoundTag) {
-        super.load(savedData, compoundTag);
+    public void load(CompoundTag compoundTag) {
+        super.load(compoundTag);
 
         aabb = CompoundUtils.toAABB(compoundTag.getCompound("aabb"));
         dimension = ResourceLocation.parse(compoundTag.getString("dimension"));

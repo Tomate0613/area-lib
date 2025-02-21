@@ -46,7 +46,7 @@ public class AreaSavedData extends SavedData {
             var id = ResourceLocation.parse(key);
 
             var area = AreaTypeRegistry.getArea(ResourceLocation.parse(tag.getString("type")), data, id);
-            area.load(data, tag.getCompound("data"));
+            area.load(tag.getCompound("data"));
 
             data.areas.put(id, area);
         }

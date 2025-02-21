@@ -40,8 +40,8 @@ public abstract class CompositeArea extends Area {
     }
 
     @Override
-    public void load(AreaSavedData savedData, CompoundTag compoundTag) {
-        super.load(savedData, compoundTag);
+    public void load(CompoundTag compoundTag) {
+        super.load(compoundTag);
 
         areas = new LazyAreaBVHTree(savedData);
         areas.load(compoundTag.getCompound("areas"));

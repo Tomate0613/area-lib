@@ -81,10 +81,9 @@ public abstract class Area implements BVHItem {
     /**
      * Loads the area's data from a {@link CompoundTag}.
      *
-     * @param savedData   the area saved data. Areas are not loaded yet
      * @param compoundTag the tag containing saved area data
      */
-    public void load(AreaSavedData savedData, CompoundTag compoundTag) {
+    public void load(CompoundTag compoundTag) {
         r = compoundTag.getFloat("r");
         g = compoundTag.getFloat("g");
         b = compoundTag.getFloat("b");
