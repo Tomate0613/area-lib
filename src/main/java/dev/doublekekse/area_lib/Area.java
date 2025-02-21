@@ -6,12 +6,12 @@ import dev.doublekekse.area_lib.component.AreaDataComponent;
 import dev.doublekekse.area_lib.component.AreaDataComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Area implements BVHItem {
@@ -20,7 +20,7 @@ public abstract class Area implements BVHItem {
     protected float b = 1;
 
     protected int priority = 0;
-    private final Map<AreaDataComponentType<?>, AreaDataComponent> components = new HashMap<>();
+    private final Map<AreaDataComponentType<?>, AreaDataComponent> components = new Reference2ObjectArrayMap<>();
 
     @SuppressWarnings("unchecked")
     public <T extends AreaDataComponent> T get(AreaDataComponentType<T> type) {
