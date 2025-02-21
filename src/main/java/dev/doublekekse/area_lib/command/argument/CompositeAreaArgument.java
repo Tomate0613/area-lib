@@ -8,20 +8,18 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.doublekekse.area_lib.areas.CompositeArea;
 import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
-import dev.doublekekse.area_lib.util.Pair;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class CompositeAreaArgument extends AreaArgument {
     public static final DynamicCommandExceptionType ERROR_NOT_COMPOSITE_AREA = new DynamicCommandExceptionType((object) -> Component.translatableEscape("area_lib.commands.area.error_is_not_composite", object));
 
-    public static Map.Entry<ResourceLocation, CompositeArea> getArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+    public static CompositeArea getArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
         var resourceLocation = context.getArgument(name, ResourceLocation.class);
         var savedData = AreaSavedData.getServerData(context.getSource().getServer());
 
@@ -32,7 +30,7 @@ public class CompositeAreaArgument extends AreaArgument {
         var area = savedData.get(resourceLocation);
 
         if (area instanceof CompositeArea compositeArea) {
-            return new Pair<>(resourceLocation, compositeArea);
+            return compositeArea;
         }
 
         throw ERROR_NOT_COMPOSITE_AREA.create(resourceLocation);

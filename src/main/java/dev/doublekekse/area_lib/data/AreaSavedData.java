@@ -63,6 +63,7 @@ public class AreaSavedData extends SavedData {
         return areas.values();
     }
 
+    @Deprecated
     public Set<Map.Entry<ResourceLocation, Area>> getAreaEntries() {
         if (!isInitialized) {
             throw new IllegalStateException("Areas have not been initialized");
@@ -85,20 +86,17 @@ public class AreaSavedData extends SavedData {
         return areas.get(id);
     }
 
-    public Area remove(MinecraftServer server, ResourceLocation id) {
-        var removedArea = areas.remove(id);
-
-        invalidate(server, removedArea);
+    public void remove(MinecraftServer server, Area area) {
+        areas.remove(area.getId());
+        invalidate(server, area);
 
         // Remove area from sub-area caches
         // This is definitely not an ideal way to deal with this, but it works
         for (var entry : areas.entrySet()) {
             if (entry.getValue() instanceof CompositeArea compositeArea) {
-                compositeArea.removeSubArea(id);
+                compositeArea.removeSubArea(area);
             }
         }
-
-        return removedArea;
     }
 
     public boolean has(ResourceLocation id) {
@@ -109,14 +107,14 @@ public class AreaSavedData extends SavedData {
         return areas.containsKey(id);
     }
 
-    public Map.Entry<ResourceLocation, Area> find(Level level, Vec3 pos) {
+    public Area find(Level level, Vec3 pos) {
         if (!isInitialized) {
             throw new IllegalStateException("Areas have not been initialized");
         }
 
-        for (var entry : areas.entrySet()) {
-            if (entry.getValue().contains(level, pos)) {
-                return entry;
+        for (var area : areas.values()) {
+            if (area.contains(level, pos)) {
+                return area;
             }
         }
 

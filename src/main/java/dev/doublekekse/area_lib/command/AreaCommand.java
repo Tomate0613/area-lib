@@ -10,13 +10,10 @@ import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
 import dev.doublekekse.area_lib.command.argument.CompositeAreaArgument;
 import dev.doublekekse.area_lib.data.AreaSavedData;
-import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.phys.AABB;
 
 import static dev.doublekekse.area_lib.AreaLib.AREA_LIST_ARGUMENT;
@@ -90,11 +87,11 @@ public class AreaCommand {
                     var area = AreaArgument.getArea(ctx, "id");
                     var priority = IntegerArgumentType.getInteger(ctx, "priority");
 
-                    area.getValue().setPriority(priority);
+                    area.setPriority(priority);
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.priority.success", area.getKey().toString(), priority), true);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.priority.success", area.toString(), priority), true);
 
-                    savedData.invalidate(server, area.getValue());
+                    savedData.invalidate(server, area);
 
                     return 1;
                 }))).then(literal("color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
@@ -108,11 +105,11 @@ public class AreaCommand {
                     var g = FloatArgumentType.getFloat(ctx, "g");
                     var b = FloatArgumentType.getFloat(ctx, "b");
 
-                    area.getValue().setColor(r, g, b);
+                    area.setColor(r, g, b);
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.getKey().toString()), true);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.toString()), true);
 
-                    savedData.invalidate(server, area.getValue());
+                    savedData.invalidate(server, area);
 
                     return 1;
                 })))))
@@ -121,11 +118,10 @@ public class AreaCommand {
 
                 var savedData = AreaSavedData.getServerData(server);
 
-                var location = AreaArgument.getAreaId(ctx, "id");
+                var area = AreaArgument.getArea(ctx, "id");
+                savedData.remove(server, area);
 
-                var area = savedData.remove(server, location);
-
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", location.toString(), area.toString()), true);
+                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", area.toString(), area.toString()), true);
 
                 return 1;
             }))).then(literal("query").executes(ctx -> {
@@ -160,16 +156,16 @@ public class AreaCommand {
                     var subArea = AreaArgument.getArea(ctx, "sub_area");
 
 
-                    if (subArea.getValue() instanceof CompositeArea) {
+                    if (subArea instanceof CompositeArea) {
                         ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_composite_sub_area"));
 
                         return 0;
                     }
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.getKey().toString(), area.getKey().toString()), false);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.getId().toString(), area.toString()), false);
 
-                    area.getValue().addSubArea(subArea);
-                    savedData.invalidate(server, area.getValue());
+                    area.addSubArea(subArea);
+                    savedData.invalidate(server, area);
 
                     return 1;
                 }))).then(literal("remove").then(argument("sub_area", AreaArgument.area()).executes(ctx -> {
@@ -177,12 +173,12 @@ public class AreaCommand {
 
                     var savedData = AreaSavedData.getServerData(server);
                     var area = CompositeAreaArgument.getArea(ctx, "id");
-                    var subArea = AreaArgument.getAreaId(ctx, "sub_area");
+                    var subArea = AreaArgument.getArea(ctx, "sub_area");
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.getKey().toString()), false);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.toString()), false);
 
-                    area.getValue().removeSubArea(subArea);
-                    savedData.invalidate(server, area.getValue());
+                    area.removeSubArea(subArea);
+                    savedData.invalidate(server, area);
 
                     return 1;
                 }))))

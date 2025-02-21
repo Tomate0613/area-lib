@@ -10,14 +10,12 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
-import dev.doublekekse.area_lib.util.Pair;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class AreaArgument implements ArgumentType<ResourceLocation> {
@@ -45,23 +43,12 @@ public class AreaArgument implements ArgumentType<ResourceLocation> {
         return new AreaArgument();
     }
 
-    public static ResourceLocation getAreaId(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+    public static Area getArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
         var resourceLocation = context.getArgument(name, ResourceLocation.class);
         var savedData = AreaSavedData.getServerData(context.getSource().getServer());
 
         if (savedData.has(resourceLocation)) {
-            return resourceLocation;
-        }
-
-        throw ERROR_UNKNOWN_AREA.create(resourceLocation);
-    }
-
-    public static Map.Entry<ResourceLocation, ? extends Area> getArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-        var resourceLocation = context.getArgument(name, ResourceLocation.class);
-        var savedData = AreaSavedData.getServerData(context.getSource().getServer());
-
-        if (savedData.has(resourceLocation)) {
-            return new Pair<>(resourceLocation, savedData.get(resourceLocation));
+            return savedData.get(resourceLocation);
         }
 
         throw ERROR_UNKNOWN_AREA.create(resourceLocation);

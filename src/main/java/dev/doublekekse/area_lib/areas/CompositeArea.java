@@ -27,16 +27,16 @@ public abstract class CompositeArea extends Area {
         super(savedData, id);
     }
 
-    public void addSubArea(Map.Entry<ResourceLocation, ? extends Area> area) {
-        if (area.getValue() instanceof CompositeArea) {
+    public void addSubArea(Area area) {
+        if (area instanceof CompositeArea) {
             throw new IllegalArgumentException("Sub areas may not be composite areas");
         }
 
-        areas.add(area.getKey());
+        areas.add(area.getId());
     }
 
-    public void removeSubArea(ResourceLocation areaId) {
-        areas.remove(areaId);
+    public void removeSubArea(Area area) {
+        areas.remove(area.getId());
     }
 
     @Override
