@@ -33,22 +33,52 @@ public abstract class Area implements BVHItem {
         this.id = id;
     }
 
+    /**
+     * Retrieves a component of the specified type from this area.
+     *
+     * @param type the type of component to retrieve
+     * @param <T>  the component type
+     * @return the component if present, otherwise null
+     */
     @SuppressWarnings("unchecked")
     public <T extends AreaDataComponent> T get(AreaDataComponentType<T> type) {
         return (T) components.get(type);
     }
 
+    /**
+     * Retrieves a component of the specified type, or returns the default value if not present.
+     *
+     * @param type         the type of component to retrieve
+     * @param defaultValue the default value to return if the component is missing
+     * @param <T>          the component type
+     * @return the component if present, otherwise the default value
+     */
     @SuppressWarnings("unchecked")
     public <T extends AreaDataComponent> T getOrDefault(AreaDataComponentType<T> type, T defaultValue) {
         return (T) components.getOrDefault(type, defaultValue);
     }
 
+    /**
+     * Adds or updates a component in this area. If a MinecraftServer is provided,
+     * the change is synchronized with the client.
+     *
+     * @param server    the MinecraftServer instance for synchronization, or null if not needed
+     * @param type      the type of component being added
+     * @param component the component instance to store
+     * @param <T>       the component type
+     */
     public <T extends AreaDataComponent> void put(@Nullable MinecraftServer server, AreaDataComponentType<T> type, T component) {
         components.put(type, component);
 
         invalidate(server);
     }
 
+    /**
+     * Invalidates this area's data, marking it for reprocessing and notifying change listeners.
+     * If a MinecraftServer is provided, the change is synchronized with the client.
+     *
+     * @param server the MinecraftServer instance for client synchronization, or null if not needed
+     */
     public void invalidate(@Nullable MinecraftServer server) {
         savedData.invalidate(server, this);
     }
@@ -115,11 +145,13 @@ public abstract class Area implements BVHItem {
     }
 
     /**
-     * Sets the color used to render this area.
+     * Sets the color used to render this area. If a MinecraftServer is provided,
+     * the change is synchronized with the client.
      *
-     * @param r the red component (0.0 - 1.0)
-     * @param g the green component (0.0 - 1.0)
-     * @param b the blue component (0.0 - 1.0)
+     * @param server the MinecraftServer instance for client synchronization, or null if not needed
+     * @param r      the red component (0.0 - 1.0)
+     * @param g      the green component (0.0 - 1.0)
+     * @param b      the blue component (0.0 - 1.0)
      */
     public final void setColor(@Nullable MinecraftServer server, float r, float g, float b) {
         this.r = r;
@@ -140,8 +172,10 @@ public abstract class Area implements BVHItem {
     }
 
     /**
-     * Sets the priority of the area.
+     * Sets the priority of the area. If a MinecraftServer is provided,
+     * the change is synchronized with the client.
      *
+     * @param server   the MinecraftServer instance for client synchronization, or null if not needed
      * @param priority the new priority value
      */
     public final void setPriority(@Nullable MinecraftServer server, int priority) {
