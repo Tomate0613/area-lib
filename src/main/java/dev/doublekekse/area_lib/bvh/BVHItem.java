@@ -16,10 +16,10 @@ public interface BVHItem {
     boolean contains(Level level, Vec3 position);
 
     /**
-     * Gets the bounding box of the item, if not empty. The bounding box is used for
+     * Gets the bounding box of the item. The bounding box is used for
      * spatial partitioning and optimization in BVH structures.
      *
-     * @return the bounding box as an {@link AABB}, or null if empty
+     * @return the bounding box as an {@link AABB}
      */
-    @Nullable AABB getBoundingBox();
+    AABB getBoundingBox();
 }
