@@ -3,13 +3,21 @@ package dev.doublekekse.area_lib.areas;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
+import dev.doublekekse.area_lib.component.AreaDataComponent;
+import dev.doublekekse.area_lib.component.AreaDataComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Comparator;
+import java.util.List;
 
 public abstract class CompositeArea extends Area {
     protected LazyAreaBVHTree areas;
@@ -38,6 +46,14 @@ public abstract class CompositeArea extends Area {
     public void removeSubArea(@Nullable MinecraftServer server, Area area) {
         areas.remove(area.getId());
         invalidate(server);
+    }
+
+    public List<Area> getAreasContaining(Level level, Vec3 position) {
+        return areas.findAreasContaining(level, position);
+    }
+
+    public List<Area> getAreasContaining(Entity entity) {
+        return getAreasContaining(entity.level(), entity.position());
     }
 
     @Override
