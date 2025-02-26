@@ -4,6 +4,7 @@ import dev.doublekekse.area_lib.util.AABBUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -109,16 +110,24 @@ public class BVHNode<T extends BVHItem> {
         return new BVHNode<>(items);
     }
 
-    public BVHNode<T> without(T item) {
+    public @Nullable BVHNode<T> without(T item) {
         var items = listAllAreas();
         items.remove(item);
+
+        if(items.isEmpty()) {
+            return null;
+        }
 
         return new BVHNode<>(items);
     }
 
-    public BVHNode<T> withoutAll(Collection<T> item) {
+    public @Nullable BVHNode<T> withoutAll(Collection<T> item) {
         var items = listAllAreas();
         items.removeAll(item);
+
+        if(items.isEmpty()) {
+            return null;
+        }
 
         return new BVHNode<>(items);
     }
