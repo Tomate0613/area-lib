@@ -112,7 +112,16 @@ public class AreaSavedData extends SavedData {
         return areas.containsKey(id);
     }
 
-    public Area find(Level level, Vec3 pos) {
+    /**
+     * Finds all areas containing the specified position.
+     * Note: This method performs a linear search through all areas and might be slow.
+     * For regular position checks, consider using {@link #findTrackedAreasContaining} instead.
+     *
+     * @param level the level to check in
+     * @param pos   the position to check for
+     * @return a list of all areas containing the position
+     */
+    public Area findAllAreasContaining(Level level, Vec3 pos) {
         if (!isInitialized) {
             throw new IllegalStateException("Areas have not been initialized");
         }
