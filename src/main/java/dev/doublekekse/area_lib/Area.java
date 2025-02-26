@@ -80,6 +80,10 @@ public abstract class Area implements BVHItem {
     public <T extends AreaDataComponent> void put(@Nullable MinecraftServer server, AreaDataComponentType<T> type, T component) {
         components.put(type, component);
 
+        if(type.tracking()) {
+            savedData.startTracking(this);
+        }
+
         invalidate(server);
     }
 
@@ -97,7 +101,15 @@ public abstract class Area implements BVHItem {
         var component = (T) components.remove(type);
         invalidate(server);
 
+        if (type.tracking() && !shouldBeTracked()) {
+            savedData.stopTracking(this);
+        }
+
         return component;
+    }
+
+    private boolean shouldBeTracked() {
+        return components.keySet().stream().anyMatch(AreaDataComponentType::tracking);
     }
 
     /**
@@ -162,6 +174,10 @@ public abstract class Area implements BVHItem {
 
             if (type == null) {
                 continue;
+            }
+
+            if(type.tracking()) {
+                savedData.startTracking(this);
             }
 
             var component = type.factory().get();

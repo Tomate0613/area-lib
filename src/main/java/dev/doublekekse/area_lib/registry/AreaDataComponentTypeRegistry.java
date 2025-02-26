@@ -12,8 +12,15 @@ public class AreaDataComponentTypeRegistry {
     private static final Map<ResourceLocation, AreaDataComponentType<?>> REGISTRY = new HashMap<>();
 
     public static <T extends AreaDataComponent> AreaDataComponentType<T> register(ResourceLocation id, Supplier<T> factory) {
-        var type = new AreaDataComponentType<>(id, factory);
-        REGISTRY.put(id, type);
+        return register(new AreaDataComponentType<T>(id, factory, false));
+    }
+
+    public static <T extends AreaDataComponent> AreaDataComponentType<T> registerTracking(ResourceLocation id, Supplier<T> factory) {
+        return register(new AreaDataComponentType<T>(id, factory, true));
+    }
+
+    private static <T extends AreaDataComponent> AreaDataComponentType<T> register(AreaDataComponentType<T> type) {
+        REGISTRY.put(type.id(), type);
         return type;
     }
 

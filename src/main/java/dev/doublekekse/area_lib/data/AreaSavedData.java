@@ -1,6 +1,7 @@
 package dev.doublekekse.area_lib.data;
 
 import dev.doublekekse.area_lib.Area;
+import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import dev.doublekekse.area_lib.areas.CompositeArea;
@@ -9,10 +10,12 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +25,7 @@ import java.util.function.Consumer;
 public class AreaSavedData extends SavedData {
     private final List<Consumer<Area>> changeListeners = new ArrayList<>();
     private final Map<ResourceLocation, Area> areas = new HashMap<>();
+    private final LazyAreaBVHTree trackedAreas = new LazyAreaBVHTree(this);
     private boolean isInitialized = true;
 
     @Override
@@ -155,4 +159,35 @@ public class AreaSavedData extends SavedData {
         AreaSavedData::load,
         null
     );
+
+    /**
+     * Finds all tracked areas containing the specified position.
+     *
+     * @param level the level to check in
+     * @param pos   the position to check for
+     * @return a list of all tracked areas containing the position
+     */
+    public List<Area> findTrackedAreasContaining(Level level, Vec3 pos) {
+        return trackedAreas.findAreasContaining(level, pos);
+    }
+
+    /**
+     * Finds all tracked areas containing the specified entity.
+     *
+     * @param entity the entity to check for
+     * @return a list of all tracked areas containing the entity
+     */
+    public List<Area> findTrackedAreasContaining(Entity entity) {
+        return findTrackedAreasContaining(entity.level(), entity.position());
+    }
+
+    @ApiStatus.Internal
+    public void startTracking(Area area) {
+        trackedAreas.add(area.getId());
+    }
+
+    @ApiStatus.Internal
+    public void stopTracking(Area area) {
+        trackedAreas.remove(area.getId());
+    }
 }
