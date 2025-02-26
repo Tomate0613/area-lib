@@ -50,10 +50,6 @@ public class LazyAreaBVHTree {
         node = node.without(area);
     }
 
-    public AreaSavedData getSavedData() {
-        return savedData;
-    }
-
     private void build() {
         var areas = areaIds.stream().map(savedData::get).filter(Objects::nonNull).toList();
         node = new BVHNode<>(areas);
