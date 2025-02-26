@@ -31,8 +31,8 @@ public class AreaArgument implements ArgumentType<ResourceLocation> {
         if (context.getSource() instanceof ClientSuggestionProvider) {
             var savedData = AreaClientData.getClientLevelData();
 
-            return SharedSuggestionProvider.suggest(savedData.getAreaEntries().stream().map(
-                (entry) -> entry.getKey().toString()
+            return SharedSuggestionProvider.suggest(savedData.getAreas().stream().map(
+                (area) -> area.getId().toString()
             ), builder);
         }
 

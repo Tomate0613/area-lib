@@ -41,8 +41,8 @@ public class CompositeAreaArgument extends AreaArgument {
         if (context.getSource() instanceof ClientSuggestionProvider) {
             var savedData = AreaClientData.getClientLevelData();
 
-            return SharedSuggestionProvider.suggest(savedData.getAreaEntries().stream().filter(entry -> entry.getValue() instanceof CompositeArea).map(
-                (entry) -> entry.getKey().toString()
+            return SharedSuggestionProvider.suggest(savedData.getAreas().stream().filter(area -> area instanceof CompositeArea).map(
+                (area) -> area.getId().toString()
             ), builder);
         }
 
