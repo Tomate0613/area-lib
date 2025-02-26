@@ -46,6 +46,16 @@ public abstract class Area implements BVHItem {
     }
 
     /**
+     * Checks whether this area has a component of the specified type.
+     *
+     * @param type the type of component to check for
+     * @return true if the component is present, false otherwise
+     */
+    public boolean has(AreaDataComponentType<?> type) {
+        return components.containsKey(type);
+    }
+
+    /**
      * Retrieves a component of the specified type, or returns the default value if not present.
      *
      * @param type         the type of component to retrieve
@@ -71,6 +81,23 @@ public abstract class Area implements BVHItem {
         components.put(type, component);
 
         invalidate(server);
+    }
+
+    /**
+     * Removes a component from this area. If a MinecraftServer is provided,
+     * the change is synchronized with the client.
+     *
+     * @param server the MinecraftServer instance for synchronization, or null if not needed
+     * @param type   the type of component to remove
+     * @param <T>    the component type
+     * @return the removed component if present, otherwise null
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends AreaDataComponent> T remove(@Nullable MinecraftServer server, AreaDataComponentType<T> type) {
+        var component = (T) components.remove(type);
+        invalidate(server);
+
+        return component;
     }
 
     /**
