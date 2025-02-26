@@ -129,7 +129,7 @@ public class AreaCommand {
                 var count = 0;
                 for (var area : areas) {
                     if (area.contains(level, pos)) {
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.entry", area.getId()), false);
+                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.entry", area.getId().toString()), false);
                         count++;
                     }
                 }
