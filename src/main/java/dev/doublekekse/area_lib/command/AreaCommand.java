@@ -82,8 +82,6 @@ public class AreaCommand {
                 .then(literal("priority").then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
-                    var savedData = AreaSavedData.getServerData(server);
-
                     var area = AreaArgument.getArea(ctx, "id");
                     var priority = IntegerArgumentType.getInteger(ctx, "priority");
 
@@ -126,12 +124,12 @@ public class AreaCommand {
 
                 var pos = ctx.getSource().getPosition();
 
-                var entries = savedData.getAreaEntries();
+                var areas = savedData.getAreas();
 
                 var count = 0;
-                for (var entry : entries) {
-                    if (entry.getValue().contains(level, pos)) {
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.entry", entry.getKey().toString()), false);
+                for (var area : areas) {
+                    if (area.contains(level, pos)) {
+                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.entry", area.getId()), false);
                         count++;
                     }
                 }
