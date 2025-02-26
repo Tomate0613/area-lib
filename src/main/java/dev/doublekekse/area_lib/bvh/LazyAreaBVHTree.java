@@ -16,20 +16,24 @@ import java.util.*;
 
 public class LazyAreaBVHTree {
     private @Nullable BVHNode<Area> node;
-    private final List<ResourceLocation> areaIds = new ArrayList<>();
+    private final Set<ResourceLocation> areaIds = new HashSet<>();
     private final AreaSavedData savedData;
 
     public LazyAreaBVHTree(AreaSavedData savedData) {
         this.savedData = savedData;
     }
 
-    public LazyAreaBVHTree(AreaSavedData savedData, List<ResourceLocation> areaIds) {
+    public LazyAreaBVHTree(AreaSavedData savedData, Collection<ResourceLocation> areaIds) {
         this.savedData = savedData;
         this.areaIds.addAll(areaIds);
     }
 
     public void add(ResourceLocation areaId) {
-        areaIds.add(areaId);
+        var didAdd = areaIds.add(areaId);
+
+        if (!didAdd) {
+            return;
+        }
 
         if (node == null) {
             return;
@@ -89,7 +93,7 @@ public class LazyAreaBVHTree {
         return node.listAllAreas();
     }
 
-    public List<ResourceLocation> getAreaIds() {
+    public Set<ResourceLocation> getAreaIds() {
         return areaIds;
     }
 
