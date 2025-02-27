@@ -28,30 +28,24 @@ public class LazyAreaBVHTree {
         this.areaIds.addAll(areaIds);
     }
 
+    private void invalidate() {
+        node = null;
+    }
+
     public void add(ResourceLocation areaId) {
         var didAdd = areaIds.add(areaId);
 
-        if (!didAdd) {
-            return;
+        if (didAdd) {
+            invalidate();
         }
-
-        if (node == null) {
-            return;
-        }
-
-        var area = savedData.get(areaId);
-        node = node.with(area);
     }
 
     public void remove(ResourceLocation areaId) {
-        areaIds.remove(areaId);
+        var didRemove = areaIds.remove(areaId);
 
-        if (node == null) {
-            return;
+        if (didRemove) {
+            invalidate();
         }
-
-        var area = savedData.get(areaId);
-        node = node.without(area);
     }
 
     private void build() {
@@ -98,7 +92,7 @@ public class LazyAreaBVHTree {
     }
 
     public @Nullable AABB getBoundingBox() {
-        if(areaIds.isEmpty()) {
+        if (areaIds.isEmpty()) {
             return null;
         }
         if (node == null) {
