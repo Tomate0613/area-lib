@@ -31,10 +31,10 @@ public class BVHNode<T extends BVHItem> {
                 .orElseThrow();
 
             var longestAxis = AABBUtils.longestAxis(boundingBox);
-            items.sort(Comparator.comparingDouble(a -> Objects.requireNonNull(a.getBoundingBox()).getCenter().get(longestAxis)));
+            var sorted = items.stream().sorted(Comparator.comparingDouble(a -> Objects.requireNonNull(a.getBoundingBox()).getCenter().get(longestAxis))).toList();
             int mid = items.size() / 2;
-            this.left = new BVHNode<>(items.subList(0, mid));
-            this.right = new BVHNode<>(items.subList(mid, items.size()));
+            this.left = new BVHNode<>(sorted.subList(0, mid));
+            this.right = new BVHNode<>(sorted.subList(mid, sorted.size()));
         }
     }
 
