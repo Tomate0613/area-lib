@@ -97,7 +97,10 @@ public class LazyAreaBVHTree {
         return areaIds;
     }
 
-    public AABB getBoundingBox() {
+    public @Nullable AABB getBoundingBox() {
+        if(areaIds.isEmpty()) {
+            return null;
+        }
         if (node == null) {
             build();
         }
