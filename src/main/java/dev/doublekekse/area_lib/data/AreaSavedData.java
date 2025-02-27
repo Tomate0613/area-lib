@@ -78,7 +78,10 @@ public class AreaSavedData extends SavedData {
     }
 
     public void put(MinecraftServer server, Area area) {
-        areas.put(area.getId(), area);
+        var previous = areas.put(area.getId(), area);
+        if(previous != null) {
+            stopTracking(previous);
+        }
 
         invalidate(server, area);
     }
@@ -93,6 +96,7 @@ public class AreaSavedData extends SavedData {
 
     public void remove(MinecraftServer server, Area area) {
         areas.remove(area.getId());
+        stopTracking(area);
         invalidate(server, area);
 
         // Remove area from sub-area caches
