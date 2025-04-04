@@ -1,6 +1,7 @@
 package dev.doublekekse.area_lib;
 
 import dev.doublekekse.area_lib.areas.BoxArea;
+import dev.doublekekse.area_lib.areas.SphereArea;
 import dev.doublekekse.area_lib.areas.UnionArea;
 import dev.doublekekse.area_lib.command.AreaCommand;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
@@ -42,6 +43,7 @@ public class AreaLib implements ModInitializer {
 
         AreaTypeRegistry.register(BoxArea::new, id("box"));
         AreaTypeRegistry.register(UnionArea::new, id("union"));
+        AreaTypeRegistry.register(SphereArea::new, id("sphere"));
 
         ArgumentTypeRegistry.registerArgumentType(id("area"), AreaArgument.class, SingletonArgumentInfo.contextFree(AreaArgument::area));
         ArgumentTypeRegistry.registerArgumentType(id("composite_area"), CompositeAreaArgument.class, SingletonArgumentInfo.contextFree(CompositeAreaArgument::area));

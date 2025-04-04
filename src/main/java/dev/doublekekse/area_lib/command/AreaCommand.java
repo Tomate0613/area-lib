@@ -1,10 +1,14 @@
 package dev.doublekekse.area_lib.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.areas.BoxArea;
 import dev.doublekekse.area_lib.areas.CompositeArea;
+import dev.doublekekse.area_lib.areas.SphereArea;
 import dev.doublekekse.area_lib.areas.UnionArea;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
@@ -36,17 +40,7 @@ public class AreaCommand {
 
                 var area = new BoxArea(savedData, id, level.dimension().location(), new AABB(from, to));
 
-                if (savedData.has(id)) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.create.error_existing"));
-
-                    return 0;
-                }
-
-                savedData.put(server, area);
-
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", id.toString()), true);
-
-                return 1;
+                return create(savedData, ctx, area);
             })))).then(literal("union").then(argument("areas", AREA_LIST_ARGUMENT).executes(ctx -> {
                 var server = ctx.getSource().getServer();
                 var areas = AREA_LIST_ARGUMENT.getList(ctx, "areas");
@@ -67,18 +61,21 @@ public class AreaCommand {
 
                 var area = new UnionArea(savedData, id, bvhTree);
 
-                if (savedData.has(id)) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.create.error_existing"));
+                return create(savedData, ctx, area);
+            }))).then(literal("sphere").then(argument("center", Vec3Argument.vec3()).then(argument("radius", DoubleArgumentType.doubleArg()).executes(ctx -> {
+                var level = ctx.getSource().getLevel();
+                var server = ctx.getSource().getServer();
 
-                    return 0;
-                }
+                var center = Vec3Argument.getVec3(ctx, "center");
+                var radius = DoubleArgumentType.getDouble(ctx, "radius");
 
-                savedData.put(server, area);
+                var savedData = AreaSavedData.getServerData(server);
+                var id = ResourceLocationArgument.getId(ctx, "id");
 
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", id.toString()), true);
+                var area = new SphereArea(savedData, id, level.dimension().location(), center, radius);
 
-                return 1;
-            }))))).then(literal("modify").then(argument("id", AreaArgument.area())
+                return create(savedData, ctx, area);
+            })))))).then(literal("modify").then(argument("id", AreaArgument.area())
                 .then(literal("priority").then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
@@ -171,5 +168,21 @@ public class AreaCommand {
                 }))))
             )
         );
+    }
+
+    private static int create(AreaSavedData savedData, CommandContext<CommandSourceStack> ctx, Area area) {
+        var server = ctx.getSource().getServer();
+
+        if (savedData.has(area.getId())) {
+            ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.create.error_existing"));
+
+            return 0;
+        }
+
+        savedData.put(server, area);
+
+        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", area.getId().toString()), true);
+
+        return 1;
     }
 }
