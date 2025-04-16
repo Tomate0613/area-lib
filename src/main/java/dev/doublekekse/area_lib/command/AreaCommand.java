@@ -50,7 +50,7 @@ public class AreaCommand {
                     var area = savedData.get(areaId);
 
                     if(area == null) {
-                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist"));
+                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist", areaId.toString()));
 
                         return 0;
                     }
