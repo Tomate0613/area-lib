@@ -49,6 +49,12 @@ public class AreaCommand {
                 for (var areaId : areas) {
                     var area = savedData.get(areaId);
 
+                    if(area == null) {
+                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist"));
+
+                        return 0;
+                    }
+
                     if (area instanceof CompositeArea) {
                         ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_composite_sub_area"));
 
