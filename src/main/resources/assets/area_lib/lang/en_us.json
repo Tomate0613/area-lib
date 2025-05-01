@@ -10,10 +10,11 @@
   "area_lib.commands.area.modify.color.success": "Set color for area \"%s\"",
   "area_lib.commands.area.modify.priority.success": "Set priority for area \"%s\" to %s",
 
-  "area_lib.commands.area.delete.success": "Removed area \"%s\" with data %s",
+  "area_lib.commands.area.delete.success": "Removed area \"%s\"",
 
   "area_lib.commands.area.error_does_not_exist": "Area \"%s\" does not exist",
   "area_lib.commands.area.error_composite_sub_area": "Sub areas may not be composite areas",
+  "area_lib.commands.area.error_is_not_composite": "Area \"%s\" is not a composite area",
 
   "area_lib.commands.area.error_not_in_area": "Not in an area",
   "area_lib.commands.area.query.entry": "You are currently in \"%s\"",

@@ -76,8 +76,4 @@ public class BoxArea extends Area {
 
         LevelRenderer.renderLineBox(poseStack, context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
     }
-
-    public String toString() {
-        return "BoxArea " + aabb + " priority: " + priority;
-    }
 }

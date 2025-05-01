@@ -80,7 +80,7 @@ public abstract class Area implements BVHItem {
     public <T extends AreaDataComponent> void put(@Nullable MinecraftServer server, AreaDataComponentType<T> type, T component) {
         components.put(type, component);
 
-        if(type.tracking()) {
+        if (type.tracking()) {
             savedData.startTracking(this);
         }
 
@@ -176,7 +176,7 @@ public abstract class Area implements BVHItem {
                 continue;
             }
 
-            if(type.tracking()) {
+            if (type.tracking()) {
                 savedData.startTracking(this);
             }
 
@@ -245,4 +245,8 @@ public abstract class Area implements BVHItem {
      */
     public abstract ResourceLocation getType();
 
+    @Override
+    public String toString() {
+        return id.toString();
+    }
 }
