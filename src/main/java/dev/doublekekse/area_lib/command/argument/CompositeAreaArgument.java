@@ -17,7 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.concurrent.CompletableFuture;
 
 public class CompositeAreaArgument extends AreaArgument {
-    public static final DynamicCommandExceptionType ERROR_NOT_COMPOSITE_AREA = new DynamicCommandExceptionType((object) -> Component.translatableEscape("area_lib.commands.area.error_is_not_composite", object));
+    public static final DynamicCommandExceptionType ERROR_NOT_COMPOSITE_AREA = new DynamicCommandExceptionType((object) -> Component.translatable("area_lib.commands.area.error_is_not_composite", object));
 
     public static CompositeArea getArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
         var resourceLocation = context.getArgument(name, ResourceLocation.class);

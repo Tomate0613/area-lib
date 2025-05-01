@@ -36,7 +36,7 @@ public class BoxArea extends Area {
         super.load(compoundTag);
 
         aabb = CompoundUtils.toAABB(compoundTag.getCompound("aabb"));
-        dimension = ResourceLocation.parse(compoundTag.getString("dimension"));
+        dimension = ResourceLocation.tryParse(compoundTag.getString("dimension"));
     }
 
     @Override

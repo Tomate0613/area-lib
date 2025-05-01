@@ -6,7 +6,6 @@ import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import dev.doublekekse.area_lib.areas.CompositeArea;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -29,7 +28,7 @@ public class AreaSavedData extends SavedData {
     private boolean isInitialized = true;
 
     @Override
-    public @NotNull CompoundTag save(CompoundTag compoundTag, HolderLookup.Provider provider) {
+    public @NotNull CompoundTag save(CompoundTag compoundTag) {
         areas.forEach((key, value) -> {
             var tag = new CompoundTag();
 
@@ -42,15 +41,15 @@ public class AreaSavedData extends SavedData {
         return compoundTag;
     }
 
-    public static AreaSavedData load(CompoundTag compoundTag, HolderLookup.Provider provider) {
+    public static AreaSavedData load(CompoundTag compoundTag) {
         var data = new AreaSavedData();
         data.isInitialized = false;
 
         for (String key : compoundTag.getAllKeys()) {
             var tag = compoundTag.getCompound(key);
-            var id = ResourceLocation.parse(key);
+            var id = ResourceLocation.tryParse(key);
 
-            var area = AreaTypeRegistry.getArea(ResourceLocation.parse(tag.getString("type")), data, id);
+            var area = AreaTypeRegistry.getArea(ResourceLocation.tryParse(tag.getString("type")), data, id);
             area.load(tag.getCompound("data"));
 
             data.areas.put(id, area);
@@ -79,7 +78,7 @@ public class AreaSavedData extends SavedData {
 
     public void put(MinecraftServer server, Area area) {
         var previous = areas.put(area.getId(), area);
-        if(previous != null) {
+        if (previous != null) {
             stopTracking(previous);
         }
 
@@ -161,17 +160,11 @@ public class AreaSavedData extends SavedData {
 
     public static AreaSavedData getServerData(MinecraftServer server) {
         DimensionDataStorage persistentStateManager = server.overworld().getDataStorage();
-        AreaSavedData data = persistentStateManager.computeIfAbsent(factory, "areas");
+        AreaSavedData data = persistentStateManager.computeIfAbsent(AreaSavedData::load, AreaSavedData::new, "areas");
         data.setDirty();
 
         return data;
     }
-
-    private static final SavedData.Factory<AreaSavedData> factory = new SavedData.Factory<>(
-        AreaSavedData::new,
-        AreaSavedData::load,
-        null
-    );
 
     /**
      * Finds all tracked areas containing the specified position.

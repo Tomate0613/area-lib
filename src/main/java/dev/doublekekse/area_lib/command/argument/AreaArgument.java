@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.concurrent.CompletableFuture;
 
 public class AreaArgument implements ArgumentType<ResourceLocation> {
-    public static final DynamicCommandExceptionType ERROR_UNKNOWN_AREA = new DynamicCommandExceptionType((object) -> Component.translatableEscape("area_lib.commands.area.error_does_not_exist", object));
+    public static final DynamicCommandExceptionType ERROR_UNKNOWN_AREA = new DynamicCommandExceptionType((object) -> Component.translatable("area_lib.commands.area.error_does_not_exist", object));
 
     @Override
     public ResourceLocation parse(StringReader reader) throws CommandSyntaxException {

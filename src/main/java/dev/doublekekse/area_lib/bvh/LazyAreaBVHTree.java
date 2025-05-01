@@ -120,7 +120,7 @@ public class LazyAreaBVHTree {
         areaIds.clear();
 
         for (var areaIdTag : listTag) {
-            var areaId = ResourceLocation.parse(areaIdTag.getAsString());
+            var areaId = ResourceLocation.tryParse(areaIdTag.getAsString());
 
             areaIds.add(areaId);
         }

@@ -53,6 +53,7 @@ public class SphereArea extends Area {
     private void renderSphere(PoseStack poseStack, MultiBufferSource buffer) {
         var pose = poseStack.last();
         var matrix = pose.pose();
+        var normal = pose.normal();
 
         var vertexConsumer = buffer.getBuffer(RenderType.lineStrip());
 
@@ -74,8 +75,8 @@ public class SphereArea extends Area {
                 float y2 = (float) (radius * Math.cos(theta2));
                 float z2 = (float) (radius * Math.sin(theta2) * Math.sin(phi));
 
-                vertexConsumer.addVertex(matrix, x1, y1, z1).setColor(r, g, b, 1).setNormal(0, 1, 0);
-                vertexConsumer.addVertex(matrix, x2, y2, z2).setColor(r, g, b, 1).setNormal(1, 0, 0);
+                vertexConsumer.vertex(matrix, x1, y1, z1).color(r, g, b, 1).normal(normal, 0, 1, 0).endVertex();
+                vertexConsumer.vertex(matrix, x2, y2, z2).color(r, g, b, 1).normal(normal, 1, 0, 0).endVertex();
             }
         }
 
@@ -136,7 +137,7 @@ public class SphereArea extends Area {
         center = new Vec3(x, y, z);
         radius = compoundTag.getDouble("radius");
 
-        dimension = ResourceLocation.parse(compoundTag.getString("dimension"));
+        dimension = ResourceLocation.tryParse(compoundTag.getString("dimension"));
     }
 
     @Override

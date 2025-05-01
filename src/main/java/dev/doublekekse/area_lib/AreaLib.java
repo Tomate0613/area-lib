@@ -14,7 +14,6 @@ import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.resources.ResourceLocation;
@@ -28,8 +27,6 @@ public class AreaLib implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        PayloadTypeRegistry.playS2C().register(ClientboundAreaSyncPacket.TYPE, ClientboundAreaSyncPacket.STREAM_CODEC);
-
         CommandRegistrationCallback.EVENT.register(
             (dispatcher, registryAccess, environment) -> {
                 AreaCommand.register(dispatcher);
@@ -50,7 +47,7 @@ public class AreaLib implements ModInitializer {
     }
 
     public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath("area_lib", path);
+        return new ResourceLocation("area_lib", path);
     }
 
     public static Area getServerArea(MinecraftServer server, ResourceLocation id) {
