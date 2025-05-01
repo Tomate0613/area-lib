@@ -49,7 +49,7 @@ public class AreaCommand {
                 for (var areaId : areas) {
                     var area = savedData.get(areaId);
 
-                    if(area == null) {
+                    if (area == null) {
                         ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist", areaId.toString()));
 
                         return 0;
@@ -116,7 +116,7 @@ public class AreaCommand {
                 var area = AreaArgument.getArea(ctx, "id");
                 savedData.remove(server, area);
 
-                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", area.toString(), area.toString()), true);
+                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", area.toString()), true);
 
                 return 1;
             }))).then(literal("query").executes(ctx -> {
@@ -132,7 +132,7 @@ public class AreaCommand {
                 var count = 0;
                 for (var area : areas) {
                     if (area.contains(level, pos)) {
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.entry", area.getId().toString()), false);
+                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.entry", area.toString()), false);
                         count++;
                     }
                 }
@@ -155,7 +155,7 @@ public class AreaCommand {
                         return 0;
                     }
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.getId().toString(), area.toString()), false);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.toString(), area.toString()), false);
 
                     area.addSubArea(server, subArea);
 
@@ -187,7 +187,7 @@ public class AreaCommand {
 
         savedData.put(server, area);
 
-        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", area.getId().toString()), true);
+        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.create.success", area.toString()), true);
 
         return 1;
     }

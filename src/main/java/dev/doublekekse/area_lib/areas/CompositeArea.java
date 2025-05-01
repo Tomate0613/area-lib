@@ -81,8 +81,4 @@ public abstract class CompositeArea extends Area {
     @Override
     public void render(WorldRenderContext context, PoseStack poseStack) {
     }
-
-    public String toString() {
-        return "CompositeArea " + areas + " priority: " + priority;
-    }
 }

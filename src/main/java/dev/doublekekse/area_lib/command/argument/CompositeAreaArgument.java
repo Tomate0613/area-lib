@@ -33,7 +33,7 @@ public class CompositeAreaArgument extends AreaArgument {
             return compositeArea;
         }
 
-        throw ERROR_NOT_COMPOSITE_AREA.create(resourceLocation);
+        throw ERROR_NOT_COMPOSITE_AREA.create(resourceLocation.toString());
     }
 
     @Override

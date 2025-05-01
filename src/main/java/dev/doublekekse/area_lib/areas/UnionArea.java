@@ -25,9 +25,4 @@ public class UnionArea extends CompositeArea {
     public ResourceLocation getType() {
         return AreaLib.id("union");
     }
-
-    @Override
-    public String toString() {
-        return "UnionArea " + super.toString();
-    }
 }
