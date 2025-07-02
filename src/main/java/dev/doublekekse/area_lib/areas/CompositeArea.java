@@ -58,9 +58,9 @@ public abstract class CompositeArea extends Area {
         super.load(compoundTag);
 
         areas = new LazyAreaBVHTree(savedData);
-        areas.load(compoundTag.getCompound("areas"));
+        areas.load(compoundTag.getCompound("areas").get());
 
-        priority = compoundTag.getInt("priority");
+        priority = compoundTag.getInt("priority").orElse(0);
     }
 
     @Override

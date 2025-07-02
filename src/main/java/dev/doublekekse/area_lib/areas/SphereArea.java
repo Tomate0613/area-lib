@@ -129,14 +129,14 @@ public class SphereArea extends Area {
     public void load(CompoundTag compoundTag) {
         super.load(compoundTag);
 
-        var x = compoundTag.getDouble("x");
-        var y = compoundTag.getDouble("y");
-        var z = compoundTag.getDouble("z");
+        var x = compoundTag.getDouble("x").orElse(0.0);
+        var y = compoundTag.getDouble("y").orElse(0.0);
+        var z = compoundTag.getDouble("z").orElse(0.0);
 
         center = new Vec3(x, y, z);
-        radius = compoundTag.getDouble("radius");
+        radius = compoundTag.getDouble("radius").orElse(5.0);
 
-        dimension = ResourceLocation.parse(compoundTag.getString("dimension"));
+        dimension = ResourceLocation.parse(compoundTag.getString("dimension").get());
     }
 
     @Override

@@ -161,15 +161,15 @@ public abstract class Area implements BVHItem {
      * @param compoundTag the tag containing saved area data
      */
     public void load(CompoundTag compoundTag) {
-        r = compoundTag.getFloat("r");
-        g = compoundTag.getFloat("g");
-        b = compoundTag.getFloat("b");
+        r = compoundTag.getFloat("r").orElse(0f);
+        g = compoundTag.getFloat("g").orElse(0f);
+        b = compoundTag.getFloat("b").orElse(0f);
 
-        priority = compoundTag.getInt("priority");
+        priority = compoundTag.getInt("priority").orElse(0);
 
-        var componentsTag = compoundTag.getCompound("components");
-        for (var key : componentsTag.getAllKeys()) {
-            var id = ResourceLocation.tryParse(key);
+        var componentsTag = compoundTag.getCompound("components").orElseGet(CompoundTag::new);
+        for (var entry : componentsTag.entrySet()) {
+            var id = ResourceLocation.tryParse(entry.getKey());
             var type = AreaDataComponentTypeRegistry.get(id);
 
             if (type == null) {
@@ -181,7 +181,7 @@ public abstract class Area implements BVHItem {
             }
 
             var component = type.factory().get();
-            component.load(savedData, componentsTag.getCompound(key));
+            component.load(savedData, entry.getValue().asCompound().orElseThrow());
 
             components.put(type, component);
         }

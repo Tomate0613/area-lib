@@ -4,7 +4,6 @@ import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -18,7 +17,7 @@ public record ClientboundAreaSyncPacket(AreaSavedData areaSavedData) implements 
     public static final CustomPacketPayload.Type<ClientboundAreaSyncPacket> TYPE = new CustomPacketPayload.Type<>(AreaLib.id("clientbound_area_sync_packet"));
 
     private ClientboundAreaSyncPacket(FriendlyByteBuf buf) {
-        this(AreaSavedData.load(Objects.requireNonNull(buf.readNbt()), null));
+        this(AreaSavedData.load(Objects.requireNonNull(buf.readNbt())));
     }
 
     @Override
@@ -27,11 +26,7 @@ public record ClientboundAreaSyncPacket(AreaSavedData areaSavedData) implements 
     }
 
     public void write(FriendlyByteBuf buf) {
-        var tag = new CompoundTag();
-
-        areaSavedData.save(tag, null);
-
-        buf.writeNbt(tag);
+        buf.writeNbt(areaSavedData.save());
     }
 
     public static void handle(ClientboundAreaSyncPacket packet, ClientPlayNetworking.Context context) {

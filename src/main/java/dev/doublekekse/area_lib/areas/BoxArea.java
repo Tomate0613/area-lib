@@ -6,8 +6,9 @@ import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.util.CompoundUtils;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -35,8 +36,8 @@ public class BoxArea extends Area {
     public void load(CompoundTag compoundTag) {
         super.load(compoundTag);
 
-        aabb = CompoundUtils.toAABB(compoundTag.getCompound("aabb"));
-        dimension = ResourceLocation.parse(compoundTag.getString("dimension"));
+        aabb = compoundTag.getCompound("aabb").map(CompoundUtils::toAABB).orElseGet(() -> new AABB(BlockPos.ZERO));
+        dimension = compoundTag.getString("dimension").map(ResourceLocation::parse).orElse(null);
     }
 
     @Override
@@ -74,6 +75,6 @@ public class BoxArea extends Area {
             return;
         }
 
-        LevelRenderer.renderLineBox(poseStack, context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
+        ShapeRenderer.renderLineBox(poseStack, context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
     }
 }

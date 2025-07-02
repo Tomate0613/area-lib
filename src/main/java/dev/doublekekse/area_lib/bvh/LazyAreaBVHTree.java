@@ -5,7 +5,6 @@ import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -116,11 +115,11 @@ public class LazyAreaBVHTree {
     }
 
     public void load(CompoundTag tag) {
-        var listTag = tag.getList("area_ids", Tag.TAG_STRING);
+        var listTag = tag.getList("area_ids").get();
         areaIds.clear();
 
         for (var areaIdTag : listTag) {
-            var areaId = ResourceLocation.parse(areaIdTag.getAsString());
+            var areaId = ResourceLocation.parse(areaIdTag.asString().get());
 
             areaIds.add(areaId);
         }

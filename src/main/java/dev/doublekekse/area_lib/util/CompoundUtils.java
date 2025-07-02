@@ -19,13 +19,13 @@ public class CompoundUtils {
     }
 
     public static AABB toAABB(CompoundTag tag) {
-        var minX = tag.getDouble("minX");
-        var minY = tag.getDouble("minY");
-        var minZ = tag.getDouble("minZ");
+        var minX = tag.getDouble("minX").orElse(0.0);
+        var minY = tag.getDouble("minY").orElse(0.0);
+        var minZ = tag.getDouble("minZ").orElse(0.0);
 
-        var maxX = tag.getDouble("maxX");
-        var maxY = tag.getDouble("maxY");
-        var maxZ = tag.getDouble("maxZ");
+        var maxX = tag.getDouble("maxX").orElse(0.0);
+        var maxY = tag.getDouble("maxY").orElse(0.0);
+        var maxZ = tag.getDouble("maxZ").orElse(0.0);
 
         return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
