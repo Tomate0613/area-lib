@@ -107,7 +107,16 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.toString()), true);
 
                     return 1;
-                })))))
+                }))))).then(literal("copy_components_from").then(argument("other_id", AreaArgument.area()).executes(ctx -> {
+                    var server = ctx.getSource().getServer();
+
+                    var area = AreaArgument.getArea(ctx, "id");
+                    var other = AreaArgument.getArea(ctx, "other_id");
+
+                    area.copyComponentsFrom(server, other);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.copy_components_from.success", other.toString(), area.toString()), true);
+                    return 1;
+                })))
             )).then(literal("delete").then(argument("id", AreaArgument.area()).executes(ctx -> {
                 var server = ctx.getSource().getServer();
 
