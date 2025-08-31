@@ -108,6 +108,19 @@ public abstract class Area implements BVHItem {
         return component;
     }
 
+    /**
+     * Adds all components from the other area to this one.
+     * If a MinecraftServer is provided, the change is synchronized with the client.
+     *
+     * @param server the MinecraftServer instance for synchronization, or null if not needed
+     * @param other  the area to copy the components from
+     */
+    public void copyComponentsFrom(@Nullable MinecraftServer server, Area other) {
+        components.putAll(other.components);
+
+        invalidate(server);
+    }
+
     private boolean shouldBeTracked() {
         return components.keySet().stream().anyMatch(AreaDataComponentType::tracking);
     }

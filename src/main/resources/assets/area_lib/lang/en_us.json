@@ -20,5 +20,6 @@
   "area_lib.commands.area.query.entry": "You are currently in \"%s\"",
 
   "area_lib.key.toggle_areas": "Toggle area rendering",
-  "area_lib.category.area_lib": "Area Lib"
+  "area_lib.category.area_lib": "Area Lib",
+  "area_lib.commands.area.modify.copy_components_from.success": "Added all area components from %s to %s"
 }
