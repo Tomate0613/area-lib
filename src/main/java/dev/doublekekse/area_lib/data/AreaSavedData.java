@@ -131,9 +131,30 @@ public class AreaSavedData extends SavedData {
      *
      * @param level the level to check in
      * @param pos   the position to check for
-     * @return a list of all areas containing the position
+     * @return a collection of all areas containing the position
      */
-    public Area findAllAreasContaining(Level level, Vec3 pos) {
+    public Collection<Area> findAllAreasContaining(Level level, Vec3 pos) {
+        if (!isInitialized) {
+            throw new IllegalStateException("Areas have not been initialized");
+        }
+
+        return areas.values()
+            .stream()
+            .filter(area -> area.contains(level, pos))
+            .toList();
+    }
+
+
+    /**
+     * Finds any areas containing the specified position.
+     * Note: This method performs a linear search through all areas and might be slow.
+     * For regular position checks, consider using {@link #findTrackedAreasContaining} instead.
+     *
+     * @param level the level to check in
+     * @param pos   the position to check for
+     * @return area containing the position or null
+     */
+    public Area findAnyAreaContaining(Level level, Vec3 pos) {
         if (!isInitialized) {
             throw new IllegalStateException("Areas have not been initialized");
         }
