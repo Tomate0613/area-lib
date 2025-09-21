@@ -117,8 +117,13 @@ public abstract class Area implements BVHItem {
      */
     public void copyComponentsFrom(@Nullable MinecraftServer server, Area other) {
         components.putAll(other.components);
-
         invalidate(server);
+
+        if (shouldBeTracked()) {
+            savedData.startTracking(this);
+        } else {
+            savedData.stopTracking(this);
+        }
     }
 
     private boolean shouldBeTracked() {
