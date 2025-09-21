@@ -10,6 +10,9 @@
   "area_lib.commands.area.modify.color.success": "Set color for area \"%s\"",
   "area_lib.commands.area.modify.priority.success": "Set priority for area \"%s\" to %s",
 
+  "area_lib.commands.area.modify.replace.success": "Replaced shape for area \"%s\"",
+  "area_lib.commands.area.modify.replace.error.self_composite": "Can't replace area with composite area containing itself",
+
   "area_lib.commands.area.delete.success": "Removed area \"%s\"",
 
   "area_lib.commands.area.error_does_not_exist": "Area \"%s\" does not exist",
