@@ -5,7 +5,7 @@ import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.util.CompoundUtils;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
@@ -70,11 +70,11 @@ public class BoxArea extends Area {
     }
 
     @Override
-    public void render(WorldRenderContext context, PoseStack poseStack) {
-        if (!context.world().dimension().location().equals(dimension)) {
+    public void render(WorldRenderContext context, PoseStack poseStack, ResourceLocation dim) {
+        if (!dim.equals(dimension)) {
             return;
         }
 
-        ShapeRenderer.renderLineBox(poseStack, context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
+        ShapeRenderer.renderLineBox(poseStack.last(), context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
     }
 }

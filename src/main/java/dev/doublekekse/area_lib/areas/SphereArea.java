@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.*;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.data.AreaSavedData;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
@@ -35,8 +35,8 @@ public class SphereArea extends Area {
     }
 
     @Override
-    public void render(WorldRenderContext context, PoseStack poseStack) {
-        if (!context.world().dimension().location().equals(dimension)) {
+    public void render(WorldRenderContext context, PoseStack poseStack, ResourceLocation dim) {
+        if (!dim.equals(dimension)) {
             return;
         }
 

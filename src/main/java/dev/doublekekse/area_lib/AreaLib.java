@@ -62,7 +62,7 @@ public class AreaLib implements ModInitializer {
     }
 
     public static AreaSavedData getSavedData(Level level) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return AreaClientData.getClientLevelData();
         } else {
             return AreaSavedData.getServerData(Objects.requireNonNull(level.getServer()));
