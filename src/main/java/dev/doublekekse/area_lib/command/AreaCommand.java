@@ -26,7 +26,6 @@ import static net.minecraft.commands.Commands.literal;
 
 public class AreaCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-
         dispatcher.register(
             literal("area").requires((s) -> s.hasPermission(2)).then(literal("create").then(argument("id", ResourceLocationArgument.id()).then(literal("box").then(argument("from", Vec3Argument.vec3()).then(argument("to", Vec3Argument.vec3()).executes((ctx) -> {
                 var level = ctx.getSource().getLevel();
