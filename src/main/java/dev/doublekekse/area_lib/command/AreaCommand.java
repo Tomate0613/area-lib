@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.areas.BoxArea;
@@ -12,7 +13,6 @@ import dev.doublekekse.area_lib.areas.SphereArea;
 import dev.doublekekse.area_lib.areas.UnionArea;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
-import dev.doublekekse.area_lib.command.argument.CompositeAreaArgument;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
@@ -20,7 +20,6 @@ import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.AABB;
 
-import static dev.doublekekse.area_lib.AreaLib.AREA_LIST_ARGUMENT;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
@@ -40,20 +39,13 @@ public class AreaCommand {
                 var area = new BoxArea(savedData, id, level.dimension().location(), new AABB(from, to));
 
                 return create(savedData, ctx, area);
-            })))).then(literal("union").then(argument("areas", AREA_LIST_ARGUMENT).executes(ctx -> {
+            })))).then(literal("union").then(argument("areas", StringArgumentType.greedyString()).suggests(AreaArgument::listMultipleSuggestions).executes(ctx -> {
                 var server = ctx.getSource().getServer();
-                var areas = AREA_LIST_ARGUMENT.getList(ctx, "areas");
+                var areas = AreaArgument.getAreas(ctx, "areas");
+
                 var savedData = AreaSavedData.getServerData(server);
 
-                for (var areaId : areas) {
-                    var area = savedData.get(areaId);
-
-                    if (area == null) {
-                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist", areaId.toString()));
-
-                        return 0;
-                    }
-
+                for (var area : areas) {
                     if (area instanceof CompositeArea) {
                         ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_composite_sub_area"));
 
@@ -61,7 +53,7 @@ public class AreaCommand {
                     }
                 }
 
-                var bvhTree = new LazyAreaBVHTree(savedData, areas);
+                var bvhTree = new LazyAreaBVHTree(savedData, areas.stream().map(Area::getId).toList());
                 var id = ResourceLocationArgument.getId(ctx, "id");
 
                 var area = new UnionArea(savedData, id, bvhTree);
@@ -80,7 +72,7 @@ public class AreaCommand {
                 var area = new SphereArea(savedData, id, level.dimension().location(), center, radius);
 
                 return create(savedData, ctx, area);
-            })))))).then(literal("modify").then(argument("id", AreaArgument.area())
+            })))))).then(literal("modify").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions)
                 .then(literal("priority").then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
@@ -106,7 +98,7 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.toString()), true);
 
                     return 1;
-                }))))).then(literal("copy_components_from").then(argument("other_id", AreaArgument.area()).executes(ctx -> {
+                }))))).then(literal("copy_components_from").then(argument("other_id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getArea(ctx, "id");
@@ -116,7 +108,7 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.copy_components_from.success", other.toString(), area.toString()), true);
                     return 1;
                 })))
-            )).then(literal("delete").then(argument("id", AreaArgument.area()).executes(ctx -> {
+            )).then(literal("delete").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                 var server = ctx.getSource().getServer();
 
                 var savedData = AreaSavedData.getServerData(server);
@@ -150,11 +142,11 @@ public class AreaCommand {
                 }
 
                 return count;
-            })).then(literal("modify_composite").then(argument("id", CompositeAreaArgument.area())
-                .then(literal("add").then(argument("sub_area", AreaArgument.area()).executes(ctx -> {
+            })).then(literal("modify_composite").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listCompositeSuggestions)
+                .then(literal("add").then(argument("sub_area", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
-                    var area = CompositeAreaArgument.getArea(ctx, "id");
+                    var area = AreaArgument.getCompositeArea(ctx, "id");
                     var subArea = AreaArgument.getArea(ctx, "sub_area");
 
                     if (subArea instanceof CompositeArea) {
@@ -168,10 +160,10 @@ public class AreaCommand {
                     area.addSubArea(server, subArea);
 
                     return 1;
-                }))).then(literal("remove").then(argument("sub_area", AreaArgument.area()).executes(ctx -> {
+                }))).then(literal("remove").then(argument("sub_area", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
-                    var area = CompositeAreaArgument.getArea(ctx, "id");
+                    var area = AreaArgument.getCompositeArea(ctx, "id");
                     var subArea = AreaArgument.getArea(ctx, "sub_area");
 
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.toString()), false);
