@@ -231,19 +231,18 @@ public class AreaCommand {
 
         for (var other : savedData.getAreas()) {
             if (other instanceof CompositeArea compositeArea) {
-                compositeAreas.add(compositeArea);
-            }
-        }
-
-        savedData.put(null, area);
-
-        for (var compositeArea : compositeAreas) {
-            if(compositeArea.hasSubArea(previousArea)) {
-                compositeArea.addSubArea(null, area);
+                if(compositeArea.hasSubArea(previousArea)) {
+                    compositeAreas.add(compositeArea);
+                }
             }
         }
 
         savedData.remove(null, previousArea);
+        savedData.put(null, area);
+
+        for (var compositeArea : compositeAreas) {
+            compositeArea.addSubArea(null, area);
+        }
 
         area.copyComponentsFrom(server, previousArea);
 
