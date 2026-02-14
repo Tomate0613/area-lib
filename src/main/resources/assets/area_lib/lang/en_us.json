@@ -22,6 +22,10 @@
   "area_lib.commands.area.error_not_in_area": "Not in an area",
   "area_lib.commands.area.query.entry": "You are currently in \"%s\"",
 
+  "area_lib.commands.area.list.none": "There are no areas",
+  "area_lib.commands.area.list.singular": "There is one area:",
+  "area_lib.commands.area.list.plural": "There are %s areas:",
+
   "area_lib.key.toggle_areas": "Toggle area rendering",
   "key.category.area_lib.area_lib": "Area Lib",
   "area_lib.commands.area.modify.copy_components_from.success": "Added all area components from %s to %s"

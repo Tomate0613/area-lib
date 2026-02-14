@@ -29,111 +29,123 @@ import static net.minecraft.commands.Commands.literal;
 
 public class AreaCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(
-            literal("area").requires((s) -> s.hasPermission(2))
-                .then(literal("create").then(forEachAreaShape(argument("id", ResourceLocationArgument.id()), AreaCommand::create, "id")))
-                .then(literal("modify").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions)
-                    .then(forEachAreaShape(literal("replace_shape"), AreaCommand::replace, "id"))
-                    .then(literal("priority").then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
-                        var server = ctx.getSource().getServer();
-
-                        var area = AreaArgument.getArea(ctx, "id");
-                        var priority = IntegerArgumentType.getInteger(ctx, "priority");
-
-                        area.setPriority(server, priority);
-
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.priority.success", area.toString(), priority), true);
-
-                        return 1;
-                    }))).then(literal("color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
-                        var server = ctx.getSource().getServer();
-
-                        var area = AreaArgument.getArea(ctx, "id");
-
-                        var r = FloatArgumentType.getFloat(ctx, "r");
-                        var g = FloatArgumentType.getFloat(ctx, "g");
-                        var b = FloatArgumentType.getFloat(ctx, "b");
-
-                        area.setColor(server, r, g, b);
-
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.toString()), true);
-
-                        return 1;
-                    }))))).then(literal("copy_components_from").then(argument("other_id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
-                        var server = ctx.getSource().getServer();
-
-                        var area = AreaArgument.getArea(ctx, "id");
-                        var other = AreaArgument.getArea(ctx, "other_id");
-
-                        area.copyComponentsFrom(server, other);
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.copy_components_from.success", other.toString(), area.toString()), true);
-                        return 1;
-                    })))
-                )).then(literal("delete").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+        dispatcher.register(literal("area").requires((s) -> s.hasPermission(2))
+            .then(literal("create").then(forEachAreaShape(argument("id", ResourceLocationArgument.id()), AreaCommand::create, "id")))
+            .then(literal("modify").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions)
+                .then(forEachAreaShape(literal("replace_shape"), AreaCommand::replace, "id"))
+                .then(literal("priority").then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
                     var server = ctx.getSource().getServer();
-
-                    var savedData = AreaSavedData.getServerData(server);
 
                     var area = AreaArgument.getArea(ctx, "id");
-                    savedData.remove(server, area);
+                    var priority = IntegerArgumentType.getInteger(ctx, "priority");
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", area.toString()), true);
+                    area.setPriority(server, priority);
+
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.priority.success", area.toString(), priority), true);
 
                     return 1;
-                }))).then(literal("query").executes(ctx -> {
-                    var level = ctx.getSource().getLevel();
+                }))).then(literal("color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
-                    var savedData = AreaSavedData.getServerData(server);
+                    var area = AreaArgument.getArea(ctx, "id");
 
-                    var pos = ctx.getSource().getPosition();
+                    var r = FloatArgumentType.getFloat(ctx, "r");
+                    var g = FloatArgumentType.getFloat(ctx, "g");
+                    var b = FloatArgumentType.getFloat(ctx, "b");
 
-                    var areas = savedData.getAreas();
+                    area.setColor(server, r, g, b);
 
-                    var count = 0;
-                    for (var area : areas) {
-                        if (area.contains(level, pos)) {
-                            ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.entry", area.toString()), false);
-                            count++;
-                        }
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.toString()), true);
+
+                    return 1;
+                }))))).then(literal("copy_components_from").then(argument("other_id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                    var server = ctx.getSource().getServer();
+
+                    var area = AreaArgument.getArea(ctx, "id");
+                    var other = AreaArgument.getArea(ctx, "other_id");
+
+                    area.copyComponentsFrom(server, other);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.copy_components_from.success", other.toString(), area.toString()), true);
+                    return 1;
+                })))
+            )).then(literal("delete").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                var server = ctx.getSource().getServer();
+
+                var savedData = AreaSavedData.getServerData(server);
+
+                var area = AreaArgument.getArea(ctx, "id");
+                savedData.remove(server, area);
+
+                ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", area.toString()), true);
+
+                return 1;
+            }))).then(literal("query").executes(ctx -> {
+                var level = ctx.getSource().getLevel();
+                var server = ctx.getSource().getServer();
+
+                var savedData = AreaSavedData.getServerData(server);
+
+                var pos = ctx.getSource().getPosition();
+
+                var areas = savedData.getAreas();
+
+                var count = 0;
+                for (var area : areas) {
+                    if (area.contains(level, pos)) {
+                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.query.entry", area.toString()), false);
+                        count++;
+                    }
+                }
+
+                if (count == 0) {
+                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_not_in_area"));
+                }
+
+                return count;
+            })).then(literal("modify_composite").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listCompositeSuggestions)
+                .then(literal("add").then(argument("sub_area", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                    var server = ctx.getSource().getServer();
+
+                    var area = AreaArgument.getCompositeArea(ctx, "id");
+                    var subArea = AreaArgument.getArea(ctx, "sub_area");
+
+                    if (subArea instanceof CompositeArea) {
+                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_composite_sub_area"));
+
+                        return 0;
                     }
 
-                    if (count == 0) {
-                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_not_in_area"));
-                    }
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.toString(), area.toString()), false);
 
-                    return count;
-                })).then(literal("modify_composite").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listCompositeSuggestions)
-                    .then(literal("add").then(argument("sub_area", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
-                        var server = ctx.getSource().getServer();
+                    area.addSubArea(server, subArea);
 
-                        var area = AreaArgument.getCompositeArea(ctx, "id");
-                        var subArea = AreaArgument.getArea(ctx, "sub_area");
+                    return 1;
+                }))).then(literal("remove").then(argument("sub_area", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                    var server = ctx.getSource().getServer();
 
-                        if (subArea instanceof CompositeArea) {
-                            ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_composite_sub_area"));
+                    var area = AreaArgument.getCompositeArea(ctx, "id");
+                    var subArea = AreaArgument.getArea(ctx, "sub_area");
 
-                            return 0;
-                        }
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.toString()), false);
 
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.toString(), area.toString()), false);
+                    area.removeSubArea(server, subArea);
 
-                        area.addSubArea(server, subArea);
+                    return 1;
+                }))))
+            ).then(literal("list").executes(ctx -> {
+                var source = ctx.getSource();
+                var server = source.getServer();
+                var savedData = AreaSavedData.getServerData(server);
+                var areas = savedData.getAreas();
+                var size = areas.size();
 
-                        return 1;
-                    }))).then(literal("remove").then(argument("sub_area", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
-                        var server = ctx.getSource().getServer();
+                source.sendSuccess(() -> Component.translatable("area_lib.commands.area.list." + (size == 0 ? "none" : size == 1 ? "singular" : "plural"), size), false);
+                for (var area : areas) {
+                    source.sendSuccess(() -> Component.literal("- " + area.getId().toString()), false);
+                }
 
-                        var area = AreaArgument.getCompositeArea(ctx, "id");
-                        var subArea = AreaArgument.getArea(ctx, "sub_area");
-
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.toString()), false);
-
-                        area.removeSubArea(server, subArea);
-
-                        return 1;
-                    }))))
-                )
+                return size;
+            }))
         );
     }
 
@@ -169,7 +181,7 @@ public class AreaCommand {
                 }
             }
 
-            var bvhTree = new LazyAreaBVHTree(savedData,  areas.stream().map(Area::getId).toList());
+            var bvhTree = new LazyAreaBVHTree(savedData, areas.stream().map(Area::getId).toList());
             var id = ResourceLocationArgument.getId(ctx, areaArgumentName);
 
             var area = new UnionArea(savedData, id, bvhTree);
@@ -231,7 +243,7 @@ public class AreaCommand {
 
         for (var other : savedData.getAreas()) {
             if (other instanceof CompositeArea compositeArea) {
-                if(compositeArea.hasSubArea(previousArea)) {
+                if (compositeArea.hasSubArea(previousArea)) {
                     compositeAreas.add(compositeArea);
                 }
             }
