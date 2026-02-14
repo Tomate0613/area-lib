@@ -45,6 +45,10 @@ public abstract class CompositeArea extends Area {
         invalidate(server);
     }
 
+    public boolean hasSubArea(Area area) {
+        return areas.listAllAreas().contains(area);
+    }
+
     public List<Area> getAreasContaining(Level level, Vec3 position) {
         return areas.findAreasContaining(level, position);
     }
