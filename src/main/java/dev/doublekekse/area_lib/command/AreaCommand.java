@@ -7,6 +7,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.areas.BoxArea;
 import dev.doublekekse.area_lib.areas.CompositeArea;
@@ -138,7 +139,7 @@ public class AreaCommand {
 
     @FunctionalInterface
     interface Action {
-        int apply(AreaSavedData savedData, CommandContext<CommandSourceStack> ctx, Area area);
+        int apply(AreaSavedData savedData, CommandContext<CommandSourceStack> ctx, Area area) throws CommandSyntaxException;
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> forEachAreaShape(ArgumentBuilder<CommandSourceStack, ?> builder, Action action, String areaArgumentName) {
@@ -206,14 +207,12 @@ public class AreaCommand {
         return 1;
     }
 
-    private static int replace(AreaSavedData savedData, CommandContext<CommandSourceStack> ctx, Area area) {
+    private static int replace(AreaSavedData savedData, CommandContext<CommandSourceStack> ctx, Area area) throws CommandSyntaxException {
         var server = ctx.getSource().getServer();
 
 
         if (!savedData.has(area.getId())) {
-            ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_does_not_exist"));
-
-            return 0;
+            throw AreaArgument.ERROR_UNKNOWN_AREA.create(area.getId());
         }
 
 
