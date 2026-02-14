@@ -236,12 +236,15 @@ public class AreaCommand {
             }
         }
 
-        savedData.remove(null, previousArea);
         savedData.put(null, area);
 
         for (var compositeArea : compositeAreas) {
-            compositeArea.addSubArea(null, area);
+            if(compositeArea.hasSubArea(previousArea)) {
+                compositeArea.addSubArea(null, area);
+            }
         }
+
+        savedData.remove(null, previousArea);
 
         area.copyComponentsFrom(server, previousArea);
 
