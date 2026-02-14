@@ -1,6 +1,7 @@
 package dev.doublekekse.area_lib.command.argument;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -12,6 +13,7 @@ import dev.doublekekse.area_lib.areas.CompositeArea;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -22,6 +24,16 @@ import java.util.concurrent.CompletableFuture;
 public class AreaArgument {
     public static final DynamicCommandExceptionType ERROR_UNKNOWN_AREA = new DynamicCommandExceptionType((object) -> Component.translatableEscape("area_lib.commands.area.error_does_not_exist", object));
     public static final DynamicCommandExceptionType ERROR_NOT_COMPOSITE_AREA = new DynamicCommandExceptionType((object) -> Component.translatableEscape("area_lib.commands.area.error_is_not_composite", object));
+
+    /**
+     * Use {@link ResourceLocationArgument#id()}
+     * with {@link AreaArgument#listSuggestions(CommandContext, SuggestionsBuilder)}
+     * as suggestions instead.
+     */
+    @Deprecated
+    public static ResourceLocationArgument area() {
+        return ResourceLocationArgument.id();
+    }
 
     public static CompletableFuture<Suggestions> listSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         var savedData = AreaLib.getSavedData(context.getSource().getLevel());
