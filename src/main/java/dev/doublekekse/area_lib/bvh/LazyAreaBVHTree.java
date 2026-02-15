@@ -5,7 +5,7 @@ import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -15,14 +15,14 @@ import java.util.*;
 
 public class LazyAreaBVHTree {
     private @Nullable BVHNode<Area> node;
-    private final Set<ResourceLocation> areaIds = new HashSet<>();
+    private final Set<Identifier> areaIds = new HashSet<>();
     private final AreaSavedData savedData;
 
     public LazyAreaBVHTree(AreaSavedData savedData) {
         this.savedData = savedData;
     }
 
-    public LazyAreaBVHTree(AreaSavedData savedData, Collection<ResourceLocation> areaIds) {
+    public LazyAreaBVHTree(AreaSavedData savedData, Collection<Identifier> areaIds) {
         this.savedData = savedData;
         this.areaIds.addAll(areaIds);
     }
@@ -31,7 +31,7 @@ public class LazyAreaBVHTree {
         node = null;
     }
 
-    public void add(ResourceLocation areaId) {
+    public void add(Identifier areaId) {
         var didAdd = areaIds.add(areaId);
 
         if (didAdd) {
@@ -39,7 +39,7 @@ public class LazyAreaBVHTree {
         }
     }
 
-    public void remove(ResourceLocation areaId) {
+    public void remove(Identifier areaId) {
         var didRemove = areaIds.remove(areaId);
 
         if (didRemove) {
@@ -86,7 +86,7 @@ public class LazyAreaBVHTree {
         return node.listAllAreas();
     }
 
-    public Set<ResourceLocation> getAreaIds() {
+    public Set<Identifier> getAreaIds() {
         return areaIds;
     }
 
@@ -119,7 +119,7 @@ public class LazyAreaBVHTree {
         areaIds.clear();
 
         for (var areaIdTag : listTag) {
-            var areaId = ResourceLocation.parse(areaIdTag.asString().get());
+            var areaId = Identifier.parse(areaIdTag.asString().get());
 
             areaIds.add(areaId);
         }

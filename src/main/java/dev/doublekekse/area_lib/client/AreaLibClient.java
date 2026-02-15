@@ -31,7 +31,7 @@ public class AreaLibClient implements ClientModInitializer {
                 return;
             }
 
-            var dimension = level.dimension().location();
+            var dimension = level.dimension().identifier();
 
             var gameMode = Minecraft.getInstance().gameMode;
 

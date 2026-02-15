@@ -6,7 +6,7 @@ import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -21,13 +21,13 @@ public abstract class CompositeArea extends Area {
 
     int priority = 0;
 
-    public CompositeArea(AreaSavedData savedData, ResourceLocation id, LazyAreaBVHTree areas) {
+    public CompositeArea(AreaSavedData savedData, Identifier id, LazyAreaBVHTree areas) {
         super(savedData, id);
 
         this.areas = areas;
     }
 
-    public CompositeArea(AreaSavedData savedData, ResourceLocation id) {
+    public CompositeArea(AreaSavedData savedData, Identifier id) {
         super(savedData, id);
     }
 
@@ -83,6 +83,6 @@ public abstract class CompositeArea extends Area {
     }
 
     @Override
-    public void render(WorldRenderContext context, PoseStack poseStack, ResourceLocation resourceLocation) {
+    public void render(WorldRenderContext context, PoseStack poseStack, Identifier Identifier) {
     }
 }

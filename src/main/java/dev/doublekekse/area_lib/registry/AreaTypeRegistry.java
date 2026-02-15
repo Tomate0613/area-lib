@@ -2,16 +2,16 @@ package dev.doublekekse.area_lib.registry;
 
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.data.AreaSavedData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
 public class AreaTypeRegistry {
-    private static final Map<ResourceLocation, BiFunction<AreaSavedData, ResourceLocation, Area>> areas = new HashMap<>();
+    private static final Map<Identifier, BiFunction<AreaSavedData, Identifier, Area>> areas = new HashMap<>();
 
-    public static Area getArea(ResourceLocation areaType, AreaSavedData savedData, ResourceLocation id) {
+    public static Area getArea(Identifier areaType, AreaSavedData savedData, Identifier id) {
         try {
             return areas.get(areaType).apply(savedData, id);
         } catch (Exception e) {
@@ -19,7 +19,7 @@ public class AreaTypeRegistry {
         }
     }
 
-    public static void register(BiFunction<AreaSavedData, ResourceLocation, Area> areaFactory, ResourceLocation location) {
+    public static void register(BiFunction<AreaSavedData, Identifier, Area> areaFactory, Identifier location) {
         areas.put(location, areaFactory);
     }
 }

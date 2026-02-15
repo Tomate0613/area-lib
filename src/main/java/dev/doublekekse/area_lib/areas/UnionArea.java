@@ -3,16 +3,16 @@ package dev.doublekekse.area_lib.areas;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.data.AreaSavedData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class UnionArea extends CompositeArea {
-    public UnionArea(AreaSavedData savedData, ResourceLocation id, LazyAreaBVHTree areas) {
+    public UnionArea(AreaSavedData savedData, Identifier id, LazyAreaBVHTree areas) {
         super(savedData, id, areas);
     }
 
-    public UnionArea(AreaSavedData savedData, ResourceLocation id) {
+    public UnionArea(AreaSavedData savedData, Identifier id) {
         super(savedData, id);
     }
 
@@ -22,7 +22,7 @@ public class UnionArea extends CompositeArea {
     }
 
     @Override
-    public ResourceLocation getType() {
+    public Identifier getType() {
         return AreaLib.id("union");
     }
 }

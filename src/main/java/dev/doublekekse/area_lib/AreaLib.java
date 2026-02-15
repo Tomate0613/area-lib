@@ -12,7 +12,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 
@@ -39,15 +39,15 @@ public class AreaLib implements ModInitializer {
         AreaTypeRegistry.register(SphereArea::new, id("sphere"));
     }
 
-    public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath("area_lib", path);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath("area_lib", path);
     }
 
-    public static Area getServerArea(MinecraftServer server, ResourceLocation id) {
+    public static Area getServerArea(MinecraftServer server, Identifier id) {
         return AreaSavedData.getServerData(server).get(id);
     }
 
-    public static Area getClientArea(ResourceLocation id) {
+    public static Area getClientArea(Identifier id) {
         return AreaClientData.getClientLevelData().get(id);
     }
 

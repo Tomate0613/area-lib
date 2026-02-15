@@ -17,7 +17,8 @@ import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.AABB;
@@ -29,9 +30,9 @@ import static net.minecraft.commands.Commands.literal;
 
 public class AreaCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(literal("area").requires((s) -> s.hasPermission(2))
-            .then(literal("create").then(forEachAreaShape(argument("id", ResourceLocationArgument.id()), AreaCommand::create, "id")))
-            .then(literal("modify").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions)
+        dispatcher.register(literal("area").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+            .then(literal("create").then(forEachAreaShape(argument("id", IdentifierArgument.id()), AreaCommand::create, "id")))
+            .then(literal("modify").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions)
                 .then(forEachAreaShape(literal("replace_shape"), AreaCommand::replace, "id"))
                 .then(literal("priority").then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
                     var server = ctx.getSource().getServer();
@@ -58,7 +59,7 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.toString()), true);
 
                     return 1;
-                }))))).then(literal("copy_components_from").then(argument("other_id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                }))))).then(literal("copy_components_from").then(argument("other_id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getArea(ctx, "id");
@@ -68,7 +69,7 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.copy_components_from.success", other.toString(), area.toString()), true);
                     return 1;
                 })))
-            )).then(literal("delete").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+            )).then(literal("delete").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                 var server = ctx.getSource().getServer();
 
                 var savedData = AreaSavedData.getServerData(server);
@@ -102,8 +103,8 @@ public class AreaCommand {
                 }
 
                 return count;
-            })).then(literal("modify_composite").then(argument("id", ResourceLocationArgument.id()).suggests(AreaArgument::listCompositeSuggestions)
-                .then(literal("add").then(argument("sub_area", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+            })).then(literal("modify_composite").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listCompositeSuggestions)
+                .then(literal("add").then(argument("sub_area", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getCompositeArea(ctx, "id");
@@ -120,7 +121,7 @@ public class AreaCommand {
                     area.addSubArea(server, subArea);
 
                     return 1;
-                }))).then(literal("remove").then(argument("sub_area", ResourceLocationArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                }))).then(literal("remove").then(argument("sub_area", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getCompositeArea(ctx, "id");
@@ -163,9 +164,9 @@ public class AreaCommand {
             var to = Vec3Argument.getVec3(ctx, "to");
 
             var savedData = AreaSavedData.getServerData(server);
-            var id = ResourceLocationArgument.getId(ctx, areaArgumentName);
+            var id = IdentifierArgument.getId(ctx, areaArgumentName);
 
-            var area = new BoxArea(savedData, id, level.dimension().location(), new AABB(from, to));
+            var area = new BoxArea(savedData, id, level.dimension().identifier(), new AABB(from, to));
 
             return action.apply(savedData, ctx, area);
         })))).then(literal("union").then(argument("areas", StringArgumentType.greedyString()).suggests(AreaArgument::listMultipleSuggestions).executes(ctx -> {
@@ -182,7 +183,7 @@ public class AreaCommand {
             }
 
             var bvhTree = new LazyAreaBVHTree(savedData, areas.stream().map(Area::getId).toList());
-            var id = ResourceLocationArgument.getId(ctx, areaArgumentName);
+            var id = IdentifierArgument.getId(ctx, areaArgumentName);
 
             var area = new UnionArea(savedData, id, bvhTree);
 
@@ -195,9 +196,9 @@ public class AreaCommand {
             var radius = DoubleArgumentType.getDouble(ctx, "radius");
 
             var savedData = AreaSavedData.getServerData(server);
-            var id = ResourceLocationArgument.getId(ctx, areaArgumentName);
+            var id = IdentifierArgument.getId(ctx, areaArgumentName);
 
-            var area = new SphereArea(savedData, id, level.dimension().location(), center, radius);
+            var area = new SphereArea(savedData, id, level.dimension().identifier(), center, radius);
 
             return action.apply(savedData, ctx, area);
         })))));

@@ -8,7 +8,7 @@ import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import dev.doublekekse.area_lib.areas.CompositeArea;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 public class AreaSavedData extends SavedData {
     private final List<Consumer<Area>> changeListeners = new ArrayList<>();
-    private final Map<ResourceLocation, Area> areas = new HashMap<>();
+    private final Map<Identifier, Area> areas = new HashMap<>();
     private final LazyAreaBVHTree trackedAreas = new LazyAreaBVHTree(this);
     private boolean isInitialized = true;
 
@@ -56,9 +56,9 @@ public class AreaSavedData extends SavedData {
 
         for (var entry : compoundTag.entrySet()) {
             var tag = entry.getValue().asCompound().get();
-            var id = ResourceLocation.parse(entry.getKey());
+            var id = Identifier.parse(entry.getKey());
 
-            var area = AreaTypeRegistry.getArea(ResourceLocation.parse(tag.getString("type").get()), data, id);
+            var area = AreaTypeRegistry.getArea(Identifier.parse(tag.getString("type").get()), data, id);
             area.load(tag.getCompound("data").get());
 
             data.areas.put(id, area);
@@ -77,7 +77,7 @@ public class AreaSavedData extends SavedData {
     }
 
     @Deprecated
-    public Set<Map.Entry<ResourceLocation, Area>> getAreaEntries() {
+    public Set<Map.Entry<Identifier, Area>> getAreaEntries() {
         if (!isInitialized) {
             throw new IllegalStateException("Areas have not been initialized");
         }
@@ -94,7 +94,7 @@ public class AreaSavedData extends SavedData {
         invalidate(server, area);
     }
 
-    public Area get(ResourceLocation id) {
+    public Area get(Identifier id) {
         if (!isInitialized) {
             throw new IllegalStateException("Areas have not been initialized");
         }
@@ -116,7 +116,7 @@ public class AreaSavedData extends SavedData {
         }
     }
 
-    public boolean has(ResourceLocation id) {
+    public boolean has(Identifier id) {
         if (!isInitialized) {
             throw new IllegalStateException("Areas have not been initialized");
         }

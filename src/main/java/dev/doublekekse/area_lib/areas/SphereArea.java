@@ -4,11 +4,13 @@ import com.mojang.blaze3d.vertex.*;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.data.AreaSavedData;
+import dev.doublekekse.area_lib.gizmos.SphereGizmo;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -20,9 +22,9 @@ public class SphereArea extends Area {
     Vec3 center;
     double radius;
 
-    ResourceLocation dimension;
+    Identifier dimension;
 
-    public SphereArea(AreaSavedData savedData, ResourceLocation id, ResourceLocation dimension, Vec3 center, double radius) {
+    public SphereArea(AreaSavedData savedData, Identifier id, Identifier dimension, Vec3 center, double radius) {
         super(savedData, id);
 
         this.center = center;
@@ -30,86 +32,20 @@ public class SphereArea extends Area {
         this.dimension = dimension;
     }
 
-    public SphereArea(AreaSavedData savedData, ResourceLocation id) {
+    public SphereArea(AreaSavedData savedData, Identifier id) {
         super(savedData, id);
     }
 
     @Override
-    public void render(WorldRenderContext context, PoseStack poseStack, ResourceLocation dim) {
+    public void render(WorldRenderContext context, PoseStack poseStack, Identifier dim) {
         if (!dim.equals(dimension)) {
             return;
         }
 
-        poseStack.pushPose();
-
-        poseStack.translate(center.x, center.y, center.z);
-        renderSphere(poseStack, context.consumers());
-
-
-        poseStack.popPose();
+        //var style = new GizmoStyle(0xffffffff, 2.5f, 0x223311AA);
+        var style = GizmoStyle.stroke(ARGB.color((int) (r * 255), (int) (g * 255), (int) (b * 255)));
+        Gizmos.addGizmo(new SphereGizmo(center, radius, style));
     }
-
-    // TODO: Replace this with better sphere rendering
-    private void renderSphere(PoseStack poseStack, MultiBufferSource buffer) {
-        var pose = poseStack.last();
-        var matrix = pose.pose();
-
-        var vertexConsumer = buffer.getBuffer(RenderType.lineStrip());
-
-        int slices = 16;
-        int stacks = 10;
-
-        for (int i = 0; i <= stacks; i++) {
-            float theta1 = (float) (Math.PI * i / stacks);
-            float theta2 = (float) (Math.PI * (i + 1) / stacks);
-
-            for (int j = 0; j <= slices; j++) {
-                float phi = (float) (2 * Math.PI * j / slices);
-
-                float x1 = (float) (radius * Math.sin(theta1) * Math.cos(phi));
-                float y1 = (float) (radius * Math.cos(theta1));
-                float z1 = (float) (radius * Math.sin(theta1) * Math.sin(phi));
-
-                float x2 = (float) (radius * Math.sin(theta2) * Math.cos(phi));
-                float y2 = (float) (radius * Math.cos(theta2));
-                float z2 = (float) (radius * Math.sin(theta2) * Math.sin(phi));
-
-                vertexConsumer.addVertex(matrix, x1, y1, z1).setColor(r, g, b, 1).setNormal(0, 1, 0);
-                vertexConsumer.addVertex(matrix, x2, y2, z2).setColor(r, g, b, 1).setNormal(1, 0, 0);
-            }
-        }
-
-        /*
-        var vertexConsumer = buffer.getBuffer(RenderType.debugLineStrip(10000));
-
-        ring(pose, vertexConsumer, (x, y) -> new Vector3f(x, y, 0), new Vector3f(0, 0, 1));
-        ring(pose, vertexConsumer, (x, y) -> new Vector3f(x, 0, y), new Vector3f(0, 1, 0));
-        ring(pose, vertexConsumer, (x, y) -> new Vector3f(0, y, x), new Vector3f(1, 0, 0));
-         */
-    }
-
-    /*
-    private void ring(PoseStack.Pose pose, VertexConsumer consumer, BiFunction<Float, Float, Vector3f> transform, Vector3f normal) {
-        int segments = 32;
-
-        for (int i = 0; i < segments; i++) {
-            float theta1 = (float) (2 * Math.PI * i / segments);
-            float theta2 = (float) (2 * Math.PI * (i + 1) / segments);
-
-            float x1 = (float) (radius * Math.sin(theta1));
-            float y1 = (float) (radius * Math.cos(theta1));
-
-            float x2 = (float) (radius * Math.sin(theta2));
-            float y2 = (float) (radius * Math.cos(theta2));
-
-            var from = transform.apply(x1, y1);
-            var to = transform.apply(x2, y2);
-
-            consumer.addVertex(pose, from).setColor(r, g, b, 1).setNormal(normal.x, normal.y, normal.z);
-            consumer.addVertex(pose, to).setColor(r, g, b, 1).setNormal(normal.x, normal.y, normal.z);
-        }
-    }
-     */
 
     @Override
     public CompoundTag save() {
@@ -136,17 +72,17 @@ public class SphereArea extends Area {
         center = new Vec3(x, y, z);
         radius = compoundTag.getDouble("radius").orElse(5.0);
 
-        dimension = ResourceLocation.parse(compoundTag.getString("dimension").get());
+        dimension = Identifier.parse(compoundTag.getString("dimension").get());
     }
 
     @Override
-    public ResourceLocation getType() {
+    public Identifier getType() {
         return AreaLib.id("sphere");
     }
 
     @Override
     public boolean contains(Level level, Vec3 position) {
-        if (!Objects.equals(level.dimension().location(), dimension)) {
+        if (!Objects.equals(level.dimension().identifier(), dimension)) {
             return false;
         }
 

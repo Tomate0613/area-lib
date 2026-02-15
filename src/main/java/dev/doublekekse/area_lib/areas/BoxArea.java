@@ -6,11 +6,12 @@ import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.util.CompoundUtils;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -19,16 +20,16 @@ import java.util.Objects;
 
 public class BoxArea extends Area {
     AABB aabb;
-    ResourceLocation dimension;
+    Identifier dimension;
 
-    public BoxArea(AreaSavedData savedData, ResourceLocation id, ResourceLocation dimension, AABB aabb) {
+    public BoxArea(AreaSavedData savedData, Identifier id, Identifier dimension, AABB aabb) {
         super(savedData, id);
 
         this.dimension = dimension;
         this.aabb = aabb;
     }
 
-    public BoxArea(AreaSavedData savedData, ResourceLocation id) {
+    public BoxArea(AreaSavedData savedData, Identifier id) {
         super(savedData, id);
     }
 
@@ -37,11 +38,11 @@ public class BoxArea extends Area {
         super.load(compoundTag);
 
         aabb = compoundTag.getCompound("aabb").map(CompoundUtils::toAABB).orElseGet(() -> new AABB(BlockPos.ZERO));
-        dimension = compoundTag.getString("dimension").map(ResourceLocation::parse).orElse(null);
+        dimension = compoundTag.getString("dimension").map(Identifier::parse).orElse(null);
     }
 
     @Override
-    public ResourceLocation getType() {
+    public Identifier getType() {
         return AreaLib.id("box");
     }
 
@@ -57,7 +58,7 @@ public class BoxArea extends Area {
 
     @Override
     public boolean contains(Level level, Vec3 position) {
-        if (!Objects.equals(level.dimension().location(), dimension)) {
+        if (!Objects.equals(level.dimension().identifier(), dimension)) {
             return false;
         }
 
@@ -70,11 +71,13 @@ public class BoxArea extends Area {
     }
 
     @Override
-    public void render(WorldRenderContext context, PoseStack poseStack, ResourceLocation dim) {
+    public void render(WorldRenderContext context, PoseStack poseStack, Identifier dim) {
         if (!dim.equals(dimension)) {
             return;
         }
 
-        ShapeRenderer.renderLineBox(poseStack.last(), context.consumers().getBuffer(RenderType.lines()), aabb, r, g, b, 1);
+        //ShapeRenderer.renderLineBox(poseStack.last(), context.consumers().getBuffer(RenderTypes.lines()), aabb, r, g, b, 1);
+        var style = GizmoStyle.stroke(ARGB.color((int) (r * 255), (int) (g * 255), (int) (b * 255)));
+        Gizmos.cuboid(aabb, style);
     }
 }

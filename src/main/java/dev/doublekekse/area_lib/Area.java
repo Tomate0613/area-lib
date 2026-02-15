@@ -9,7 +9,7 @@ import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
@@ -24,11 +24,11 @@ public abstract class Area implements BVHItem {
     protected int priority = 0;
 
     protected final AreaSavedData savedData;
-    protected final ResourceLocation id;
+    protected final Identifier id;
 
     private final Map<AreaDataComponentType<?>, AreaDataComponent> components = new Reference2ObjectArrayMap<>();
 
-    public Area(AreaSavedData savedData, ResourceLocation id) {
+    public Area(AreaSavedData savedData, Identifier id) {
         this.savedData = savedData;
         this.id = id;
     }
@@ -187,7 +187,7 @@ public abstract class Area implements BVHItem {
 
         var componentsTag = compoundTag.getCompound("components").orElseGet(CompoundTag::new);
         for (var entry : componentsTag.entrySet()) {
-            var id = ResourceLocation.tryParse(entry.getKey());
+            var id = Identifier.tryParse(entry.getKey());
             var type = AreaDataComponentTypeRegistry.get(id);
 
             if (type == null) {
@@ -250,18 +250,18 @@ public abstract class Area implements BVHItem {
      * @param context   the world render context
      * @param poseStack the pose stack used for transformations
      */
-    public abstract void render(WorldRenderContext context, PoseStack poseStack, ResourceLocation dimension);
+    public abstract void render(WorldRenderContext context, PoseStack poseStack, Identifier dimension);
 
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 
     /**
      * Gets the unique type identifier of this type of area.
      *
-     * @return the type as a {@link ResourceLocation}
+     * @return the type as a {@link Identifier}
      */
-    public abstract ResourceLocation getType();
+    public abstract Identifier getType();
 
     @Override
     public String toString() {
