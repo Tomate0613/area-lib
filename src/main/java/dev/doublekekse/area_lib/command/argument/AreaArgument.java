@@ -59,31 +59,31 @@ public class AreaArgument {
     }
 
     public static Area getArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-        var Identifier = context.getArgument(name, Identifier.class);
+        var identifier = context.getArgument(name, Identifier.class);
         var savedData = AreaSavedData.getServerData(context.getSource().getServer());
 
-        if (savedData.has(Identifier)) {
-            return savedData.get(Identifier);
+        if (savedData.has(identifier)) {
+            return savedData.get(identifier);
         }
 
-        throw ERROR_UNKNOWN_AREA.create(Identifier);
+        throw ERROR_UNKNOWN_AREA.create(identifier);
     }
 
     public static CompositeArea getCompositeArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-        var Identifier = context.getArgument(name, Identifier.class);
+        var identifier = context.getArgument(name, Identifier.class);
         var savedData = AreaSavedData.getServerData(context.getSource().getServer());
 
-        if (!savedData.has(Identifier)) {
-            throw ERROR_UNKNOWN_AREA.create(Identifier);
+        if (!savedData.has(identifier)) {
+            throw ERROR_UNKNOWN_AREA.create(identifier);
         }
 
-        var area = savedData.get(Identifier);
+        var area = savedData.get(identifier);
 
         if (area instanceof CompositeArea compositeArea) {
             return compositeArea;
         }
 
-        throw ERROR_NOT_COMPOSITE_AREA.create(Identifier.toString());
+        throw ERROR_NOT_COMPOSITE_AREA.create(identifier.toString());
     }
 
     public static List<Area> getAreas(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
