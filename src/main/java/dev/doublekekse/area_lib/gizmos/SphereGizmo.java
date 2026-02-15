@@ -30,7 +30,7 @@ public record SphereGizmo(Vec3 pos, double radius, GizmoStyle style) implements 
                 var sp22 = spherePos(theta2, phi2);
 
                 if (style.hasFill()) {
-                    gizmoPrimitives.addQuad(sp11, sp21,sp22 , sp12, style.multipliedFill(f));
+                    gizmoPrimitives.addQuad(sp12, sp22, sp21, sp11, style.multipliedFill(f));
                 }
 
 
