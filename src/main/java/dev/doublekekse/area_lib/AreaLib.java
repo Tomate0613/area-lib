@@ -8,6 +8,7 @@ import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
+import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -37,6 +38,8 @@ public class AreaLib implements ModInitializer {
         AreaTypeRegistry.register(BoxArea::new, id("box"));
         AreaTypeRegistry.register(UnionArea::new, id("union"));
         AreaTypeRegistry.register(SphereArea::new, id("sphere"));
+
+        BuiltInAreaComponents.register();
     }
 
     public static Identifier id(String path) {

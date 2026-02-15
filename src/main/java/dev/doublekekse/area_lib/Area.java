@@ -4,23 +4,23 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.bvh.BVHItem;
 import dev.doublekekse.area_lib.component.AreaDataComponent;
 import dev.doublekekse.area_lib.component.AreaDataComponentType;
+import dev.doublekekse.area_lib.component.GizmoStyleComponent;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
+import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
 public abstract class Area implements BVHItem {
-    protected float r = 1;
-    protected float g = 1;
-    protected float b = 1;
-
     protected int priority = 0;
 
     protected final AreaSavedData savedData;
@@ -158,10 +158,6 @@ public abstract class Area implements BVHItem {
     public CompoundTag save() {
         var compoundTag = new CompoundTag();
 
-        compoundTag.putFloat("r", r);
-        compoundTag.putFloat("g", g);
-        compoundTag.putFloat("b", b);
-
         compoundTag.putInt("priority", priority);
 
         var componentsTag = new CompoundTag();
@@ -179,10 +175,6 @@ public abstract class Area implements BVHItem {
      * @param compoundTag the tag containing saved area data
      */
     public void load(CompoundTag compoundTag) {
-        r = compoundTag.getFloat("r").orElse(0f);
-        g = compoundTag.getFloat("g").orElse(0f);
-        b = compoundTag.getFloat("b").orElse(0f);
-
         priority = compoundTag.getInt("priority").orElse(0);
 
         var componentsTag = compoundTag.getCompound("components").orElseGet(CompoundTag::new);
@@ -214,11 +206,11 @@ public abstract class Area implements BVHItem {
      * @param g      the green component (0.0 - 1.0)
      * @param b      the blue component (0.0 - 1.0)
      */
+    @Deprecated
     public final void setColor(@Nullable MinecraftServer server, float r, float g, float b) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-
+        var style = getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, GizmoStyleComponent.DEFAULT).style;
+        var color = ARGB.color((int) r * 255, (int) g * 255, (int) b * 255);
+        put(server, BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, new GizmoStyleComponent(new GizmoStyle(color, style.strokeWidth(), style.fill())));
         invalidate(server);
     }
 
