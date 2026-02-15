@@ -7,7 +7,7 @@
 
   "area_lib.commands.area.remove_from.error_to_few": "Can't remove from area with only one region. If you intended to delete the area instead use /area delete",
 
-  "area_lib.commands.area.modify.color.success": "Set color for area \"%s\"",
+  "area_lib.commands.area.modify.gizmo_style.success": "Updated gizmo style for area \"%s\"",
   "area_lib.commands.area.modify.priority.success": "Set priority for area \"%s\" to %s",
 
   "area_lib.commands.area.modify.replace.success": "Replaced shape for area \"%s\"",

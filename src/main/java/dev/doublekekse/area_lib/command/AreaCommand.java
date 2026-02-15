@@ -1,5 +1,6 @@
 package dev.doublekekse.area_lib.command;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -14,12 +15,16 @@ import dev.doublekekse.area_lib.areas.CompositeArea;
 import dev.doublekekse.area_lib.areas.SphereArea;
 import dev.doublekekse.area_lib.areas.UnionArea;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
+import dev.doublekekse.area_lib.command.argument.ARGBColorArgument;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
+import dev.doublekekse.area_lib.component.GizmoStyleComponent;
 import dev.doublekekse.area_lib.data.AreaSavedData;
+import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
+import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.AABB;
 
@@ -45,21 +50,7 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.priority.success", area.toString(), priority), true);
 
                     return 1;
-                }))).then(literal("color").then(argument("r", FloatArgumentType.floatArg(0, 1)).then(argument("g", FloatArgumentType.floatArg(0, 1)).then(argument("b", FloatArgumentType.floatArg(0, 1)).executes(ctx -> {
-                    var server = ctx.getSource().getServer();
-
-                    var area = AreaArgument.getArea(ctx, "id");
-
-                    var r = FloatArgumentType.getFloat(ctx, "r");
-                    var g = FloatArgumentType.getFloat(ctx, "g");
-                    var b = FloatArgumentType.getFloat(ctx, "b");
-
-                    area.setColor(server, r, g, b);
-
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.color.success", area.toString()), true);
-
-                    return 1;
-                }))))).then(literal("copy_components_from").then(argument("other_id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                }))).then(literal("copy_components_from").then(argument("other_id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getArea(ctx, "id");
@@ -68,7 +59,14 @@ public class AreaCommand {
                     area.copyComponentsFrom(server, other);
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.copy_components_from.success", other.toString(), area.toString()), true);
                     return 1;
-                })))
+                }))).then(literal("gizmo_style")
+                    .then(literal("stroke_color").then(argument("color", StringArgumentType.word())
+                        .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(ARGBColorArgument.getColor(ctx, "color"), s.strokeWidth(), s.fill())))))
+                    .then(literal("stroke_width").then(argument("width", FloatArgumentType.floatArg(0))
+                        .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(s.stroke(), FloatArgumentType.getFloat(ctx, "width"), s.fill())))))
+                    .then(literal("fill_color").then(argument("color", StringArgumentType.word())
+                        .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(s.stroke(), s.strokeWidth(), ARGBColorArgument.getColor(ctx, "color"))))))
+                )
             )).then(literal("delete").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                 var server = ctx.getSource().getServer();
 
@@ -142,7 +140,7 @@ public class AreaCommand {
 
                 source.sendSuccess(() -> Component.translatable("area_lib.commands.area.list." + (size == 0 ? "none" : size == 1 ? "singular" : "plural"), size), false);
                 for (var area : areas) {
-                    source.sendSuccess(() -> Component.literal("- " + area.getId().toString()), false);
+                    source.sendSuccess(() -> Component.literal("- " + area.toString()), false);
                 }
 
                 return size;
@@ -151,11 +149,11 @@ public class AreaCommand {
     }
 
     @FunctionalInterface
-    interface Action {
+    interface ShapeAction {
         int apply(AreaSavedData savedData, CommandContext<CommandSourceStack> ctx, Area area) throws CommandSyntaxException;
     }
 
-    private static ArgumentBuilder<CommandSourceStack, ?> forEachAreaShape(ArgumentBuilder<CommandSourceStack, ?> builder, Action action, String areaArgumentName) {
+    private static ArgumentBuilder<CommandSourceStack, ?> forEachAreaShape(ArgumentBuilder<CommandSourceStack, ?> builder, ShapeAction action, String areaArgumentName) {
         return (builder.then(literal("box").then(argument("from", Vec3Argument.vec3()).then(argument("to", Vec3Argument.vec3()).executes((ctx) -> {
             var level = ctx.getSource().getLevel();
             var server = ctx.getSource().getServer();
@@ -262,5 +260,28 @@ public class AreaCommand {
         ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.replace.success", area.toString()), true);
 
         return 1;
+    }
+
+
+    @FunctionalInterface
+    interface GizmoStyleAction {
+        GizmoStyle apply(GizmoStyle s, CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException;
+    }
+
+    private static Command<CommandSourceStack> updateGizmoStyle(GizmoStyleAction modify) {
+        return (ctx) -> {
+            var source = ctx.getSource();
+            var server = source.getServer();
+            var area = AreaArgument.getArea(ctx, "id");
+
+            var style = area.getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, GizmoStyleComponent.DEFAULT).style;
+            var modifiedStyle = modify.apply(style, ctx);
+
+            area.put(server, BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, new GizmoStyleComponent(modifiedStyle));
+
+            source.sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.gizmo_style.success", area.toString()), false);
+
+            return 1;
+        };
     }
 }
