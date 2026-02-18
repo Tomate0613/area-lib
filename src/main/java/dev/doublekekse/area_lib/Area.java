@@ -9,7 +9,7 @@ import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
@@ -242,7 +242,7 @@ public abstract class Area implements BVHItem {
      * @param context   the world render context
      * @param poseStack the pose stack used for transformations
      */
-    public abstract void render(WorldRenderContext context, PoseStack poseStack, Identifier dimension);
+    public abstract void render(LevelRenderContext context, PoseStack poseStack, Identifier dimension);
 
     public Identifier getId() {
         return id;

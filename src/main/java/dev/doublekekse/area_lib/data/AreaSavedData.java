@@ -2,6 +2,7 @@ package dev.doublekekse.area_lib.data;
 
 import com.mojang.serialization.*;
 import dev.doublekekse.area_lib.Area;
+import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
@@ -14,7 +15,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
-import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -189,14 +189,14 @@ public class AreaSavedData extends SavedData {
     }
 
     public static AreaSavedData getServerData(MinecraftServer server) {
-        DimensionDataStorage persistentStateManager = server.overworld().getDataStorage();
-        AreaSavedData data = persistentStateManager.computeIfAbsent(type);
+        var storage = server.overworld().getDataStorage();
+        var data = storage.computeIfAbsent(type);
         data.setDirty();
 
         return data;
     }
 
-    private static final SavedDataType<AreaSavedData> type = new SavedDataType<>("areas", AreaSavedData::new,
+    private static final SavedDataType<AreaSavedData> type = new SavedDataType<>(AreaLib.id("areas"), AreaSavedData::new,
         AreaSavedData.CODEC,
         null);
 

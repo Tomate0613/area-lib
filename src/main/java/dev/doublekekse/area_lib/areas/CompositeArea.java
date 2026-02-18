@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.data.AreaSavedData;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
@@ -83,6 +83,6 @@ public abstract class CompositeArea extends Area {
     }
 
     @Override
-    public void render(WorldRenderContext context, PoseStack poseStack, Identifier Identifier) {
+    public void render(LevelRenderContext context, PoseStack poseStack, Identifier Identifier) {
     }
 }

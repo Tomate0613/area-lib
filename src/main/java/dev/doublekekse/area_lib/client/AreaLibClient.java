@@ -6,9 +6,9 @@ import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
@@ -20,7 +20,7 @@ public class AreaLibClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientPlayNetworking.registerGlobalReceiver(ClientboundAreaSyncPacket.TYPE, ClientboundAreaSyncPacket::handle);
 
-        WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
+        LevelRenderEvents.BEFORE_GIZMOS.register((context) -> {
             if (!renderAreas) {
                 return;
             }
@@ -43,7 +43,7 @@ public class AreaLibClient implements ClientModInitializer {
                 return;
             }
 
-            var poseStack = context.matrices();
+            var poseStack = context.poseStack();
 
             if (poseStack == null) {
                 return;
@@ -51,7 +51,7 @@ public class AreaLibClient implements ClientModInitializer {
 
             poseStack.pushPose();
 
-            var cPos = context.worldState().cameraRenderState.pos;
+            var cPos = context.levelState().cameraRenderState.pos;
             poseStack.translate(-cPos.x, -cPos.y, -cPos.z);
 
 
@@ -67,7 +67,7 @@ public class AreaLibClient implements ClientModInitializer {
         });
 
         // TODO: Figure out how to not place it at the very top
-        var keyBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        var keyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
             "area_lib.key.toggle_areas",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_UNKNOWN,
