@@ -16,8 +16,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class AreaLib implements ModInitializer {
     @Override
@@ -60,5 +62,10 @@ public class AreaLib implements ModInitializer {
         } else {
             return AreaSavedData.getServerData(Objects.requireNonNull(level.getServer()));
         }
+    }
+
+    @ApiStatus.Experimental
+    public static void addListener(Consumer<AreaSavedData> listener) {
+        AreaListeners.add(listener);
     }
 }

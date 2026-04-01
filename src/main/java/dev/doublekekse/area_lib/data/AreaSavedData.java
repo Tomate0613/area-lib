@@ -3,6 +3,7 @@ package dev.doublekekse.area_lib.data;
 import com.mojang.serialization.*;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
+import dev.doublekekse.area_lib.AreaListeners;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
@@ -173,6 +174,8 @@ public class AreaSavedData extends SavedData {
             changeListener.accept(area);
         }
 
+        AreaListeners.emit(this);
+
         setDirty();
 
         if (server != null) {
@@ -184,6 +187,11 @@ public class AreaSavedData extends SavedData {
         server.getPlayerList().getPlayers().forEach(player -> ServerPlayNetworking.send(player, new ClientboundAreaSyncPacket(this)));
     }
 
+    /**
+     * This will most likely be deleted or moved in the future
+     * (Once I figure out how I want event listeners to work)
+     */
+    @ApiStatus.Experimental
     public void addChangeListener(Consumer<Area> listener) {
         changeListeners.add(listener);
     }
