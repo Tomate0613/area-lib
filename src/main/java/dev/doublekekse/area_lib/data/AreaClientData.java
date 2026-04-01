@@ -1,6 +1,5 @@
 package dev.doublekekse.area_lib.data;
 
-import dev.doublekekse.area_lib.AreaListeners;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -14,6 +13,5 @@ public class AreaClientData {
 
     public static void setInstance(AreaSavedData areaSavedData) {
         instance = areaSavedData;
-        AreaListeners.emitClient(instance);
     }
 }

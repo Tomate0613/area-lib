@@ -66,6 +66,7 @@ public class AreaSavedData extends SavedData {
         }
 
         data.isInitialized = true;
+        AreaListeners.emitLoad(data);
         return data;
     }
 

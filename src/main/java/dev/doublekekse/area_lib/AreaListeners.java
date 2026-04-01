@@ -24,7 +24,7 @@ public class AreaListeners {
     }
 
     @ApiStatus.Internal
-    public static void emitClient(AreaSavedData data) {
+    public static void emitLoad(AreaSavedData data) {
         emit(data);
     }
 }
