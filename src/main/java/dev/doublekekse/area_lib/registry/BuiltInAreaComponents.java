@@ -8,12 +8,18 @@ import dev.doublekekse.area_lib.component.GizmoStyleComponent;
 import java.util.function.Supplier;
 
 public class BuiltInAreaComponents {
-    public static final AreaDataComponentType<GizmoStyleComponent> GIZMO_STYLE_COMPONENT = registerTracking(GizmoStyleComponent::new, "gizmo_style");
+    public static final AreaDataComponentType<GizmoStyleComponent> GIZMO_STYLE_COMPONENT = register(GizmoStyleComponent::new, "gizmo_style");
 
     private static <T extends AreaDataComponent> AreaDataComponentType<T> registerTracking(Supplier<T> factory, String path) {
         var id = AreaLib.id(path);
 
         return AreaDataComponentTypeRegistry.registerTracking(id, factory);
+    }
+
+    private static <T extends AreaDataComponent> AreaDataComponentType<T> register(Supplier<T> factory, String path) {
+        var id = AreaLib.id(path);
+
+        return AreaDataComponentTypeRegistry.register(id, factory);
     }
 
     public static void register() {
