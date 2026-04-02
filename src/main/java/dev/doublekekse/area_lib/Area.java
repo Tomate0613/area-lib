@@ -1,7 +1,6 @@
 package dev.doublekekse.area_lib;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.doublekekse.area_lib.bvh.BVHItem;
 import dev.doublekekse.area_lib.component.AreaDataComponent;
 import dev.doublekekse.area_lib.component.AreaDataComponentType;
 import dev.doublekekse.area_lib.component.GizmoStyleComponent;
@@ -16,11 +15,15 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public abstract class Area implements BVHItem {
+public abstract class Area {
     protected int priority = 0;
 
     protected final AreaSavedData savedData;
@@ -151,6 +154,23 @@ public abstract class Area implements BVHItem {
     }
 
     /**
+     * Checks whether the given position in the specified level is contained within the item.
+     *
+     * @param level    the level (world) to check in
+     * @param position the position to check
+     * @return true if the position is within the item, false otherwise
+     */
+    public abstract boolean contains(Level level, Vec3 position);
+
+    /**
+     * Gets the bounding box of the item. The bounding box is used for
+     * spatial partitioning and optimization in BVH structures.
+     *
+     * @return the bounding box as an {@link AABB}
+     */
+    @Nullable public abstract AABB getBoundingBox();
+
+    /**
      * Saves the area's data to a {@link CompoundTag}.
      *
      * @return a {@link CompoundTag} containing the saved state of the area
@@ -242,6 +262,7 @@ public abstract class Area implements BVHItem {
      * @param context   the world render context
      * @param poseStack the pose stack used for transformations
      */
+    @ApiStatus.Internal
     public abstract void render(LevelRenderContext context, PoseStack poseStack, Identifier dimension);
 
     public Identifier getId() {

@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class AreaSavedData extends SavedData {
     private final List<Consumer<Area>> changeListeners = new ArrayList<>();
@@ -218,6 +219,18 @@ public class AreaSavedData extends SavedData {
      */
     public List<Area> findTrackedAreasContaining(Level level, Vec3 pos) {
         return trackedAreas.findAreasContaining(level, pos);
+    }
+
+    /**
+     * Finds all tracked areas containing the specified position.
+     *
+     * @param level the level to check in
+     * @param pos   the position to check for
+     * @return a list of all tracked areas containing the position
+     */
+    @ApiStatus.Experimental
+    public List<Area> findTrackedAreasContaining(Level level, Vec3 pos, Predicate<Area> predicate) {
+        return trackedAreas.findAreasContaining(level, pos, predicate);
     }
 
     /**

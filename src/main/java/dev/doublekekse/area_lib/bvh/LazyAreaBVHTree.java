@@ -9,12 +9,15 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Predicate;
 
+@ApiStatus.Experimental
 public class LazyAreaBVHTree {
-    private @Nullable BVHNode<Area> node;
+    private @Nullable BVHNode node;
     private final Set<Identifier> areaIds = new HashSet<>();
     private final AreaSavedData savedData;
 
@@ -49,7 +52,7 @@ public class LazyAreaBVHTree {
 
     private void build() {
         var areas = areaIds.stream().map(savedData::get).filter(Objects::nonNull).toList();
-        node = new BVHNode<>(areas);
+        node = new BVHNode(areas);
     }
 
     public boolean contains(Level level, Vec3 position) {
@@ -73,6 +76,18 @@ public class LazyAreaBVHTree {
         }
 
         return node.findAreasContaining(level, position);
+    }
+
+    @ApiStatus.Experimental
+    public List<Area> findAreasContaining(Level level, Vec3 position, Predicate<Area> predicate) {
+        if (areaIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (node == null) {
+            build();
+        }
+
+        return node.findAreasContaining(level, position, predicate);
     }
 
     public List<Area> listAllAreas() {
