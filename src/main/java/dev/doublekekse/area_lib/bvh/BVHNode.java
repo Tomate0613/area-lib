@@ -16,27 +16,46 @@ public class BVHNode {
     private final AABB boundingBox;
     private BVHNode left;
     private BVHNode right;
-    private final List<Area> leafItems;
+    private final List<Area> nodeAreas;
 
-    public BVHNode(List<Area> items) {
-        if (items.size() <= 2) {
-            this.leafItems = items;
-            this.boundingBox = items.stream()
-                .map(Area::getBoundingBox)
-                .filter(Objects::nonNull)
-                .reduce(AABBUtils::encapsulate)
-                .orElseThrow();
+    public BVHNode(List<Area> areas) {
+        this.boundingBox = areas.stream()
+            .map(Area::getBoundingBox)
+            .filter(Objects::nonNull)
+            .reduce(AABBUtils::encapsulate)
+            .orElseThrow();
+
+        if (areas.size() <= 2) {
+            this.nodeAreas = areas;
         } else {
-            this.leafItems = null;
-            this.boundingBox = items.stream()
-                .map(Area::getBoundingBox)
-                .filter(Objects::nonNull)
-                .reduce(AABBUtils::encapsulate)
-                .orElseThrow();
+            var boundingBoxVolume = AABBUtils.volumeOf(boundingBox);
+
+            var dominant = new ArrayList<Area>();
+            var normal = new ArrayList<Area>();
+            for (var a : areas) {
+                var box = a.getBoundingBox();
+                if (box == null) continue;
+
+                var volumeFraction = AABBUtils.volumeOf(box) / boundingBoxVolume;
+
+                if (volumeFraction > 0.9) {
+                    dominant.add(a);
+                } else {
+                    normal.add(a);
+                }
+            }
+
+
+            if (normal.size() <= 2) {
+                this.nodeAreas = areas;
+                return;
+            }
 
             var longestAxis = AABBUtils.longestAxis(boundingBox);
-            var sorted = items.stream().sorted(Comparator.comparingDouble(a -> Objects.requireNonNull(a.getBoundingBox()).getCenter().get(longestAxis))).toList();
-            int mid = items.size() / 2;
+            var sorted = normal.stream().sorted(Comparator.comparingDouble(a -> Objects.requireNonNull(a.getBoundingBox()).getCenter().get(longestAxis))).toList();
+            int mid = normal.size() / 2;
+
+            this.nodeAreas = dominant.isEmpty() ? null : dominant;
 
             this.left = new BVHNode(sorted.subList(0, mid));
             this.right = new BVHNode(sorted.subList(mid, sorted.size()));
@@ -47,8 +66,13 @@ public class BVHNode {
         if (!boundingBox.contains(position)) {
             return false;
         }
-        if (leafItems != null) {
-            return leafItems.stream().anyMatch(item -> item.contains(level, position));
+
+        if (nodeAreas != null) {
+            for (var area : nodeAreas) {
+                if (area.contains(level, position)) {
+                    return true;
+                }
+            }
         }
 
         return (left != null && left.contains(level, position)) ||
@@ -60,19 +84,19 @@ public class BVHNode {
             return;
         }
 
-        if (leafItems != null) {
-            for (final var item : leafItems) {
-                if (item.contains(level, position)) {
-                    collection.add(item);
+        if (nodeAreas != null) {
+            for (final var area : nodeAreas) {
+                if (area.contains(level, position)) {
+                    collection.add(area);
                 }
             }
-        } else {
-            if (left != null) {
-                left.findAreasContaining(collection, level, position);
-            }
-            if (right != null) {
-                right.findAreasContaining(collection, level, position);
-            }
+        }
+
+        if (left != null) {
+            left.findAreasContaining(collection, level, position);
+        }
+        if (right != null) {
+            right.findAreasContaining(collection, level, position);
         }
     }
 
@@ -81,19 +105,19 @@ public class BVHNode {
             return;
         }
 
-        if (leafItems != null) {
-            for (final var item : leafItems) {
-                if (item.contains(level, position)) {
-                    collection.add(item);
+        if (nodeAreas != null) {
+            for (final var area : nodeAreas) {
+                if (area.contains(level, position) && predicate.test(area)) {
+                    collection.add(area);
                 }
             }
-        } else {
-            if (left != null) {
-                left.findAreasContaining(collection, level, position, predicate);
-            }
-            if (right != null) {
-                right.findAreasContaining(collection, level, position, predicate);
-            }
+        }
+
+        if (left != null) {
+            left.findAreasContaining(collection, level, position, predicate);
+        }
+        if (right != null) {
+            right.findAreasContaining(collection, level, position, predicate);
         }
     }
 
@@ -118,15 +142,15 @@ public class BVHNode {
     public List<Area> listAllAreas() {
         var allAreas = new ArrayList<Area>();
 
-        if (leafItems != null) {
-            allAreas.addAll(leafItems);
-        } else {
-            if (left != null) {
-                allAreas.addAll(left.listAllAreas());
-            }
-            if (right != null) {
-                allAreas.addAll(right.listAllAreas());
-            }
+        if (nodeAreas != null) {
+            allAreas.addAll(nodeAreas);
+        }
+
+        if (left != null) {
+            allAreas.addAll(left.listAllAreas());
+        }
+        if (right != null) {
+            allAreas.addAll(right.listAllAreas());
         }
 
         return allAreas;

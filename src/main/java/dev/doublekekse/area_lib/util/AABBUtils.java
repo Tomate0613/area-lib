@@ -26,4 +26,8 @@ public class AABBUtils {
             return Direction.Axis.Z;
         }
     }
+
+    public static double volumeOf(AABB aabb) {
+        return aabb.getXsize() * aabb.getYsize() * aabb.getZsize();
+    }
 }
