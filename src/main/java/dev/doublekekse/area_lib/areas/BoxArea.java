@@ -3,7 +3,7 @@ package dev.doublekekse.area_lib.areas;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
-import dev.doublekekse.area_lib.component.GizmoStyleComponent;
+import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import dev.doublekekse.area_lib.util.CompoundUtils;
@@ -76,7 +76,7 @@ public class BoxArea extends Area {
             return;
         }
 
-        var style = getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, GizmoStyleComponent.DEFAULT).style;
+        var style = getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, AreaLibClient.DEFAULT_GIZMO_STYLE);
         Gizmos.cuboid(aabb, style);
     }
 }

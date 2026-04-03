@@ -1,25 +1,24 @@
 package dev.doublekekse.area_lib.registry;
 
-import dev.doublekekse.area_lib.component.AreaDataComponent;
+import com.mojang.serialization.Codec;
 import dev.doublekekse.area_lib.component.AreaDataComponentType;
 import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class AreaDataComponentTypeRegistry {
     private static final Map<Identifier, AreaDataComponentType<?>> REGISTRY = new HashMap<>();
 
-    public static <T extends AreaDataComponent> AreaDataComponentType<T> register(Identifier id, Supplier<T> factory) {
-        return register(new AreaDataComponentType<T>(id, factory, false));
+    public static <T> AreaDataComponentType<T> register(Identifier id, Codec<T> codec) {
+        return register(new AreaDataComponentType<>(id, codec, false));
     }
 
-    public static <T extends AreaDataComponent> AreaDataComponentType<T> registerTracking(Identifier id, Supplier<T> factory) {
-        return register(new AreaDataComponentType<T>(id, factory, true));
+    public static <T> AreaDataComponentType<T> registerTracking(Identifier id, Codec<T> codec) {
+        return register(new AreaDataComponentType<>(id, codec, true));
     }
 
-    private static <T extends AreaDataComponent> AreaDataComponentType<T> register(AreaDataComponentType<T> type) {
+    private static <T> AreaDataComponentType<T> register(AreaDataComponentType<T> type) {
         REGISTRY.put(type.id(), type);
         return type;
     }

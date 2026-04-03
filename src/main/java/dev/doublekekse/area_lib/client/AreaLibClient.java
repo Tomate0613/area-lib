@@ -11,10 +11,12 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.gizmos.GizmoStyle;
 import org.lwjgl.glfw.GLFW;
 
 public class AreaLibClient implements ClientModInitializer {
     static boolean renderAreas = false;
+    public static final GizmoStyle DEFAULT_GIZMO_STYLE = GizmoStyle.stroke(0xffffffff);
 
     @Override
     public void onInitializeClient() {

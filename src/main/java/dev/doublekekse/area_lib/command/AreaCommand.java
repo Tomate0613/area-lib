@@ -15,9 +15,9 @@ import dev.doublekekse.area_lib.areas.CompositeArea;
 import dev.doublekekse.area_lib.areas.SphereArea;
 import dev.doublekekse.area_lib.areas.UnionArea;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
+import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.command.argument.ARGBColorArgument;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
-import dev.doublekekse.area_lib.component.GizmoStyleComponent;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import net.minecraft.commands.CommandSourceStack;
@@ -274,10 +274,10 @@ public class AreaCommand {
             var server = source.getServer();
             var area = AreaArgument.getArea(ctx, "id");
 
-            var style = area.getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, GizmoStyleComponent.DEFAULT).style;
+            var style = area.getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, AreaLibClient.DEFAULT_GIZMO_STYLE);
             var modifiedStyle = modify.apply(style, ctx);
 
-            area.put(server, BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, new GizmoStyleComponent(modifiedStyle));
+            area.put(server, BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, modifiedStyle);
 
             source.sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.gizmo_style.success", area.toString()), false);
 

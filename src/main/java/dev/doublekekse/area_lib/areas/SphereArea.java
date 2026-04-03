@@ -3,7 +3,7 @@ package dev.doublekekse.area_lib.areas;
 import com.mojang.blaze3d.vertex.*;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
-import dev.doublekekse.area_lib.component.GizmoStyleComponent;
+import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.gizmos.SphereGizmo;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
@@ -43,7 +43,7 @@ public class SphereArea extends Area {
         }
 
         //var style = new GizmoStyle(0xffffffff, 2.5f, 0x223311AA);
-        var style = getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, GizmoStyleComponent.DEFAULT).style;
+        var style = getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, AreaLibClient.DEFAULT_GIZMO_STYLE);
         Gizmos.addGizmo(new SphereGizmo(center, radius, style));
     }
 

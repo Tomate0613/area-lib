@@ -1,9 +1,8 @@
 package dev.doublekekse.area_lib;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.doublekekse.area_lib.component.AreaDataComponent;
+import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.component.AreaDataComponentType;
-import dev.doublekekse.area_lib.component.GizmoStyleComponent;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
@@ -11,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ARGB;
@@ -29,7 +29,7 @@ public abstract class Area {
     protected final AreaSavedData savedData;
     protected final Identifier id;
 
-    private final Map<AreaDataComponentType<?>, AreaDataComponent> components = new Reference2ObjectArrayMap<>();
+    private final Map<AreaDataComponentType<Object>, Object> components = new Reference2ObjectArrayMap<>();
 
     public Area(AreaSavedData savedData, Identifier id) {
         this.savedData = savedData;
@@ -44,7 +44,7 @@ public abstract class Area {
      * @return the component if present, otherwise null
      */
     @SuppressWarnings("unchecked")
-    public <T extends AreaDataComponent> T get(AreaDataComponentType<T> type) {
+    public <T> T get(AreaDataComponentType<T> type) {
         return (T) components.get(type);
     }
 
@@ -67,7 +67,7 @@ public abstract class Area {
      * @return the component if present, otherwise the default value
      */
     @SuppressWarnings("unchecked")
-    public <T extends AreaDataComponent> T getOrDefault(AreaDataComponentType<T> type, T defaultValue) {
+    public <T> T getOrDefault(AreaDataComponentType<T> type, T defaultValue) {
         return (T) components.getOrDefault(type, defaultValue);
     }
 
@@ -80,8 +80,9 @@ public abstract class Area {
      * @param component the component instance to store
      * @param <T>       the component type
      */
-    public <T extends AreaDataComponent> void put(@Nullable MinecraftServer server, AreaDataComponentType<T> type, T component) {
-        components.put(type, component);
+    public <T> void put(@Nullable MinecraftServer server, AreaDataComponentType<T> type, T component) {
+        //noinspection unchecked
+        components.put((AreaDataComponentType<Object>) type, component);
 
         if (type.tracking()) {
             savedData.startTracking(this);
@@ -100,7 +101,7 @@ public abstract class Area {
      * @return the removed component if present, otherwise null
      */
     @SuppressWarnings("unchecked")
-    public <T extends AreaDataComponent> T remove(@Nullable MinecraftServer server, AreaDataComponentType<T> type) {
+    public <T> T remove(@Nullable MinecraftServer server, AreaDataComponentType<T> type) {
         var component = (T) components.remove(type);
         invalidate(server);
 
@@ -182,7 +183,8 @@ public abstract class Area {
 
         var componentsTag = new CompoundTag();
         for (var entry : components.entrySet()) {
-            componentsTag.put(entry.getKey().id().toString(), entry.getValue().save());
+            var r = entry.getKey().codec().encodeStart(NbtOps.INSTANCE, entry.getValue());
+            componentsTag.put(entry.getKey().id().toString(), r.getOrThrow());
         }
         compoundTag.put("components", componentsTag);
 
@@ -210,10 +212,9 @@ public abstract class Area {
                 savedData.startTracking(this);
             }
 
-            var component = type.factory().get();
-            component.load(savedData, entry.getValue().asCompound().orElseThrow());
-
-            components.put(type, component);
+            var r = type.codec().parse(NbtOps.INSTANCE, entry.getValue());
+            //noinspection unchecked
+            components.put((AreaDataComponentType<Object>) type, r.getOrThrow());
         }
     }
 
@@ -228,9 +229,9 @@ public abstract class Area {
      */
     @Deprecated
     public final void setColor(@Nullable MinecraftServer server, float r, float g, float b) {
-        var style = getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, GizmoStyleComponent.DEFAULT).style;
+        var style = getOrDefault(BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, AreaLibClient.DEFAULT_GIZMO_STYLE);
         var color = ARGB.color((int) r * 255, (int) g * 255, (int) b * 255);
-        put(server, BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, new GizmoStyleComponent(new GizmoStyle(color, style.strokeWidth(), style.fill())));
+        put(server, BuiltInAreaComponents.GIZMO_STYLE_COMPONENT, new GizmoStyle(color, style.strokeWidth(), style.fill()));
         invalidate(server);
     }
 
