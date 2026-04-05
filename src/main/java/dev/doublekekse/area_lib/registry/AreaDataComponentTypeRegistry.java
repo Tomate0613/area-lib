@@ -6,6 +6,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,5 +56,10 @@ public class AreaDataComponentTypeRegistry {
     @ApiStatus.Internal
     public static int samplingCount() {
         return sampledIndex + 1;
+    }
+
+    @ApiStatus.Internal
+    public static Collection<AreaDataComponentType<?>> getTypes() {
+        return REGISTRY.values();
     }
 }

@@ -18,13 +18,18 @@ import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.command.argument.ARGBColorArgument;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
+import dev.doublekekse.area_lib.command.argument.AreaComponentTypeArgument;
+import dev.doublekekse.area_lib.component.AreaDataComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.commands.arguments.NbtTagArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.AABB;
 
@@ -34,6 +39,9 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public class AreaCommand {
+
+
+    @SuppressWarnings("unchecked")
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literal("area").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .then(literal("create").then(forEachAreaShape(argument("id", IdentifierArgument.id()), AreaCommand::create, "id")))
@@ -50,15 +58,6 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.priority.success", area.toString(), priority), true);
 
                     return 1;
-                }))).then(literal("copy_components_from").then(argument("other_id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
-                    var server = ctx.getSource().getServer();
-
-                    var area = AreaArgument.getArea(ctx, "id");
-                    var other = AreaArgument.getArea(ctx, "other_id");
-
-                    area.copyComponentsFrom(server, other);
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.copy_components_from.success", other.toString(), area.toString()), true);
-                    return 1;
                 }))).then(literal("gizmo_style")
                     .then(literal("stroke_color").then(argument("color", StringArgumentType.word())
                         .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(ARGBColorArgument.getColor(ctx, "color"), s.strokeWidth(), s.fill())))))
@@ -66,6 +65,68 @@ public class AreaCommand {
                         .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(s.stroke(), FloatArgumentType.getFloat(ctx, "width"), s.fill())))))
                     .then(literal("fill_color").then(argument("color", StringArgumentType.word())
                         .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(s.stroke(), s.strokeWidth(), ARGBColorArgument.getColor(ctx, "color"))))))
+                ).then(literal("components")
+                    .then(literal("set").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listSuggestions).then(argument("value", NbtTagArgument.nbtTag()).executes(ctx -> {
+                        var area = AreaArgument.getArea(ctx, "id");
+                        var type = AreaComponentTypeArgument.getComponentType(ctx, "component_type");
+                        var value = NbtTagArgument.getNbtTag(ctx, "value");
+
+                        var parsed = type.codec().parse(NbtOps.INSTANCE, value);
+
+                        if (parsed.error().isPresent()) {
+                            ctx.getSource().sendFailure(Component.literal(parsed.error().get().message()));
+                            return 0;
+                        }
+
+                        area.put(ctx.getSource().getServer(), (AreaDataComponentType<Object>) type, parsed.getOrThrow());
+                        area.invalidate(ctx.getSource().getServer());
+
+                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.components.set", type.id().toString(), value.toString(), area.toString()), true);
+
+                        return 1;
+                    })))).then(literal("get").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listPresentSuggestions).executes(ctx -> {
+                        var area = AreaArgument.getArea(ctx, "id");
+                        var type = (AreaDataComponentType<Object>) AreaComponentTypeArgument.getComponentType(ctx, "component_type");
+
+                        if (!area.has(type)) {
+                            ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_component_not_present", area.toString(), type.id().toString()));
+                            return 0;
+                        }
+
+                        var value = area.get(type);
+                        var encoded = type.codec().encodeStart(NbtOps.INSTANCE, value);
+
+                        if(encoded.error().isPresent()) {
+                            ctx.getSource().sendFailure(Component.literal(encoded.error().get().message()));
+                            return 0;
+                        }
+
+                        ctx.getSource().sendSuccess(() -> NbtUtils.toPrettyComponent(encoded.getOrThrow()), false);
+
+                        return 1;
+                    }))).then(literal("remove").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listPresentSuggestions).executes(ctx -> {
+                        var area = AreaArgument.getArea(ctx, "id");
+                        var type = AreaComponentTypeArgument.getComponentType(ctx, "component_type");
+
+                        if (!area.has(type)) {
+                            ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_component_not_present", area.toString(), type.id().toString()));
+                            return 0;
+                        }
+
+                        area.remove(ctx.getSource().getServer(), type);
+                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.components.remove", type.id().toString(), area.toString()), true);
+
+                        return 1;
+                    }))).then(literal("copy_from").then(argument("other_id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                        var server = ctx.getSource().getServer();
+
+                        var area = AreaArgument.getArea(ctx, "id");
+                        var other = AreaArgument.getArea(ctx, "other_id");
+
+                        area.copyComponentsFrom(server, other);
+                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.components.copy_from.success", other.toString(), area.toString()), true);
+                        return 1;
+                    })))
                 )
             )).then(literal("delete").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                 var server = ctx.getSource().getServer();

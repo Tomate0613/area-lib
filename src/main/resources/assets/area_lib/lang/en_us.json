@@ -5,6 +5,10 @@
   "area_lib.commands.area.modify_composite.add.success": "Added sub-area \"%s\" to area \"%s\"",
   "area_lib.commands.area.modify_composite.remove.success": "Removed sub-area \"%s\" from area \"%s\"",
 
+  "area_lib.commands.area.modify.components.copy_from.success": "Added all area components from %s to %s",
+  "area_lib.commands.area.modify.components.set": "Set \"%1$s\" of \"%3$s\" to %2$s",
+  "area_lib.commands.area.modify.components.remove": "Removed component \"%s\" from area \"%s\"",
+
   "area_lib.commands.area.remove_from.error_to_few": "Can't remove from area with only one region. If you intended to delete the area instead use /area delete",
 
   "area_lib.commands.area.modify.gizmo_style.success": "Updated gizmo style for area \"%s\"",
@@ -18,6 +22,8 @@
   "area_lib.commands.area.error_does_not_exist": "Area \"%s\" does not exist",
   "area_lib.commands.area.error_composite_sub_area": "Sub areas may not be composite areas",
   "area_lib.commands.area.error_is_not_composite": "Area \"%s\" is not a composite area",
+  "area_lib.commands.area.error_component_type_does_not_exist": "Area component type \"%s\" does not exist",
+  "area_lib.commands.area.error_component_not_present": "Area \"%s\" does not have component of type \"%s\"",
 
   "area_lib.commands.area.error_not_in_area": "Not in an area",
   "area_lib.commands.area.query.entry": "You are currently in \"%s\"",
@@ -27,6 +33,8 @@
   "area_lib.commands.area.list.plural": "There are %s areas:",
 
   "area_lib.key.toggle_areas": "Toggle area rendering",
-  "key.category.area_lib.area_lib": "Area Lib",
-  "area_lib.commands.area.modify.copy_components_from.success": "Added all area components from %s to %s"
+  "area_lib.key.toggle_areas.on": "Toggled area rendering on",
+  "area_lib.key.toggle_areas.off": "Toggled area rendering off",
+
+  "key.category.area_lib.area_lib": "Area Lib"
 }
