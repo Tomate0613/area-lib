@@ -80,8 +80,8 @@ public abstract class Area {
      * @param component the component instance to store
      * @param <T>       the component type
      */
+    @SuppressWarnings("unchecked")
     public <T> void put(@Nullable MinecraftServer server, AreaDataComponentType<T> type, T component) {
-        //noinspection unchecked
         components.put((AreaDataComponentType<Object>) type, component);
 
         if (type.tracking()) {
