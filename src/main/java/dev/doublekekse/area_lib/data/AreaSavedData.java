@@ -39,15 +39,16 @@ public class AreaSavedData extends SavedData {
         Arrays.setAll(samplingAreas, _ -> new LazyAreaBVHTree(this));
     }
 
-    private static final SavedDataType<AreaSavedData> type = new SavedDataType<>(AreaLib.id("areas"), AreaSavedData::new,
-        AreaSavedData.CODEC,
-        null);
-
     @ApiStatus.Internal
     public static final Codec<AreaSavedData> CODEC = CompoundTag.CODEC.xmap(
         AreaSavedData::load,
         AreaSavedData::save
     );
+
+    private static final SavedDataType<AreaSavedData> type = new SavedDataType<>(AreaLib.id("areas"), AreaSavedData::new,
+        AreaSavedData.CODEC,
+        null);
+
 
     @ApiStatus.Internal
     public @NotNull CompoundTag save() {
