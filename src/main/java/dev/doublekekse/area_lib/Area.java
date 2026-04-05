@@ -214,6 +214,7 @@ public abstract class Area {
      *
      * @param compoundTag the tag containing saved area data
      */
+    @SuppressWarnings("unchecked")
     public void load(CompoundTag compoundTag) {
         priority = compoundTag.getInt("priority").orElse(0);
 
@@ -235,7 +236,6 @@ public abstract class Area {
             }
 
             var r = type.codec().parse(NbtOps.INSTANCE, entry.getValue());
-            //noinspection unchecked
             components.put((AreaDataComponentType<Object>) type, r.getOrThrow());
         }
     }
