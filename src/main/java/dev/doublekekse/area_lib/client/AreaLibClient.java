@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 public class AreaLibClient implements ClientModInitializer {
@@ -79,7 +80,20 @@ public class AreaLibClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (keyBinding.consumeClick()) {
                 renderAreas = !renderAreas;
+
+                client.getChatListener().handleOverlay(Component.translatable("area_lib.key.toggle_areas." + (renderAreas ? "on" : "off")));
             }
         });
     }
+
+
+
+
+
+
+
+
+
+
+
 }
