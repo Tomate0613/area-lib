@@ -2,7 +2,6 @@ package dev.doublekekse.area_lib;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.client.AreaLibClient;
-import dev.doublekekse.area_lib.component.AreaDataComponent;
 import dev.doublekekse.area_lib.component.AreaDataComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
