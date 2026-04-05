@@ -71,10 +71,4 @@ public class AreaLib implements ModInitializer {
     public static void addListener(Consumer<AreaSavedData> listener) {
         AreaListeners.add(listener);
     }
-
-    @ApiStatus.Experimental
-    public static Collection<Area> getTrackedAreas(Entity entity) {
-        // TODO Once there is only one instance of AreaSavedData on client too saved data could easily be stored inside entity
-        return ((EntityDuck) entity).area_lib$getAreas(getSavedData(entity.level()));
-    }
 }
