@@ -8,7 +8,7 @@ import net.minecraft.resources.Identifier;
 /**
  * No longer necessary
  * @see dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry#register(Identifier, Codec)
- * @see dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry#registerTracking(Identifier, Codec)
+ * @see dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry#registerEntityTracked(Identifier, Codec)
  */
 @Deprecated
 public interface AreaDataComponent {

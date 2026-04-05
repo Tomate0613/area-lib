@@ -6,6 +6,7 @@ import dev.doublekekse.area_lib.areas.UnionArea;
 import dev.doublekekse.area_lib.command.AreaCommand;
 import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
+import dev.doublekekse.area_lib.duck.EntityDuck;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
@@ -15,9 +16,11 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -67,5 +70,11 @@ public class AreaLib implements ModInitializer {
     @ApiStatus.Experimental
     public static void addListener(Consumer<AreaSavedData> listener) {
         AreaListeners.add(listener);
+    }
+
+    @ApiStatus.Experimental
+    public static Collection<Area> getTrackedAreas(Entity entity) {
+        // TODO Once there is only one instance of AreaSavedData on client too saved data could easily be stored inside entity
+        return ((EntityDuck) entity).area_lib$getAreas(getSavedData(entity.level()));
     }
 }

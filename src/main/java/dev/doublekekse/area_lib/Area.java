@@ -88,6 +88,9 @@ public abstract class Area {
         if (type.tracking()) {
             savedData.startTracking(this);
         }
+        if (type.sampling()) {
+            savedData.startSampling(this, type);
+        }
 
         invalidate(server);
     }
@@ -109,6 +112,9 @@ public abstract class Area {
         if (type.tracking() && !shouldBeTracked()) {
             savedData.stopTracking(this);
         }
+        if (type.sampling() && !shouldSample(type)) {
+            savedData.stopSampling(this, type);
+        }
 
         return component;
     }
@@ -127,12 +133,23 @@ public abstract class Area {
         if (shouldBeTracked()) {
             savedData.startTracking(this);
         } else {
+            // I am relatively sure I can remove this else
             savedData.stopTracking(this);
+        }
+
+        for (var c : other.components.keySet()) {
+            if (c.sampling()) {
+                savedData.startSampling(this, c);
+            }
         }
     }
 
     private boolean shouldBeTracked() {
         return components.keySet().stream().anyMatch(AreaDataComponentType::tracking);
+    }
+
+    private boolean shouldSample(AreaDataComponentType<?> type) {
+        return components.keySet().stream().anyMatch(s -> s.equals(type));
     }
 
     /**
@@ -170,7 +187,8 @@ public abstract class Area {
      *
      * @return the bounding box as an {@link AABB}
      */
-    @Nullable public abstract AABB getBoundingBox();
+    @Nullable
+    public abstract AABB getBoundingBox();
 
     /**
      * Saves the area's data to a {@link CompoundTag}.
@@ -211,6 +229,10 @@ public abstract class Area {
 
             if (type.tracking()) {
                 savedData.startTracking(this);
+            }
+
+            if (type.sampling()) {
+                savedData.startSampling(this, type);
             }
 
             var r = type.codec().parse(NbtOps.INSTANCE, entry.getValue());

@@ -2,8 +2,9 @@
   "required": true,
   "minVersion": "0.8",
   "package": "dev.doublekekse.area_lib.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "EntityMixin"
   ],
   "client": [
   ],
