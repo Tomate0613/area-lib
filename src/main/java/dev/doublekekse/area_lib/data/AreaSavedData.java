@@ -327,7 +327,7 @@ public class AreaSavedData extends SavedData {
     }
 
     public static AreaSavedData getServerData(MinecraftServer server) {
-        var storage = server.overworld().getDataStorage();
+        var storage = server.getDataStorage();
         var data = storage.computeIfAbsent(type);
         data.setDirty();
 
