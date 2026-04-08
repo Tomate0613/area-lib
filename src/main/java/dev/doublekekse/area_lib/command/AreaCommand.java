@@ -41,8 +41,6 @@ import static net.minecraft.commands.Commands.literal;
 
 @ApiStatus.Internal
 public class AreaCommand {
-
-
     @SuppressWarnings("unchecked")
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literal("area").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
