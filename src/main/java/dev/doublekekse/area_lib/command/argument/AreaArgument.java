@@ -12,7 +12,6 @@ import dev.doublekekse.area_lib.areas.CompositeArea;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
