@@ -13,8 +13,10 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.ApiStatus;
 import org.lwjgl.glfw.GLFW;
 
+@ApiStatus.Internal
 public class AreaLibClient implements ClientModInitializer {
     static boolean renderAreas = false;
     public static final GizmoStyle DEFAULT_GIZMO_STYLE = GizmoStyle.stroke(0xffffffff);
@@ -85,15 +87,4 @@ public class AreaLibClient implements ClientModInitializer {
             }
         });
     }
-
-
-
-
-
-
-
-
-
-
-
 }
