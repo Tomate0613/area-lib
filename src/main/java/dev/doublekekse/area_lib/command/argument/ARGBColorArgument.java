@@ -5,7 +5,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.HexColorArgument;
 import net.minecraft.util.ARGB;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Internal
 public class ARGBColorArgument {
     public static int getColor(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
         var string = context.getArgument(name, String.class);

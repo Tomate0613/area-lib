@@ -2,6 +2,9 @@ package dev.doublekekse.area_lib.registry;
 
 import com.mojang.serialization.Codec;
 import dev.doublekekse.area_lib.component.AreaDataComponentType;
+import dev.doublekekse.area_lib.component.EntityTrackedAreaDataComponentType;
+import dev.doublekekse.area_lib.component.SampledAreaDataComponentType;
+import dev.doublekekse.area_lib.component.SimpleAreaDataComponentType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.ApiStatus;
@@ -13,8 +16,6 @@ import java.util.Map;
 public class AreaDataComponentTypeRegistry {
     private static final Map<Identifier, AreaDataComponentType<?>> REGISTRY = new HashMap<>();
 
-    private static int simpleIndex;
-    private static int entityTrackedIndex;
     private static int sampledIndex;
 
     /**
@@ -24,7 +25,7 @@ public class AreaDataComponentTypeRegistry {
      * @see #registerSampled(Identifier, Codec)
      */
     public static <T> AreaDataComponentType<T> register(Identifier id, Codec<T> codec) {
-        return register(new AreaDataComponentType<>(id, codec, AreaDataComponentType.Type.SIMPLE, simpleIndex++));
+        return register(new SimpleAreaDataComponentType<>(id, codec));
     }
 
     /**
@@ -36,15 +37,15 @@ public class AreaDataComponentTypeRegistry {
      * </p>
      * @see dev.doublekekse.area_lib.data.AreaSavedData#getEntityTrackedAreas(Entity)
      */
-    public static <T> AreaDataComponentType<T> registerEntityTracked(Identifier id, Codec<T> codec) {
-        return register(new AreaDataComponentType<>(id, codec, AreaDataComponentType.Type.ENTITY_TRACKED, entityTrackedIndex++));
+    public static <T> EntityTrackedAreaDataComponentType<T> registerEntityTracked(Identifier id, Codec<T> codec) {
+        return register(new EntityTrackedAreaDataComponentType<>(id, codec));
     }
 
-    public static <T> AreaDataComponentType<T> registerSampled(Identifier id, Codec<T> codec) {
-        return register(new AreaDataComponentType<>(id, codec, AreaDataComponentType.Type.SAMPLED, sampledIndex++));
+    public static <T> SampledAreaDataComponentType<T> registerSampled(Identifier id, Codec<T> codec) {
+        return register(new SampledAreaDataComponentType<>(id, codec, sampledIndex++));
     }
 
-    private static <T> AreaDataComponentType<T> register(AreaDataComponentType<T> type) {
+    private static <T extends AreaDataComponentType<?>> T register(T type) {
         REGISTRY.put(type.id(), type);
         return type;
     }

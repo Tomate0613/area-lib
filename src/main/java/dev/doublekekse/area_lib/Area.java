@@ -3,6 +3,7 @@ package dev.doublekekse.area_lib;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.component.AreaDataComponentType;
+import dev.doublekekse.area_lib.component.SampledAreaDataComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
@@ -84,11 +85,11 @@ public abstract class Area {
     public <T> void put(@Nullable MinecraftServer server, AreaDataComponentType<T> type, T component) {
         components.put((AreaDataComponentType<Object>) type, component);
 
-        if (type.tracking()) {
+        if (type.entityTracked()) {
             savedData.startTracking(this);
         }
-        if (type.sampling()) {
-            savedData.startSampling(this, type);
+        if (type.sampled()) {
+            savedData.startSampling(this, (SampledAreaDataComponentType<?>) type);
         }
 
         invalidate(server);
@@ -108,11 +109,11 @@ public abstract class Area {
         var component = (T) components.remove(type);
         invalidate(server);
 
-        if (type.tracking() && !shouldBeTracked()) {
+        if (type.entityTracked() && !shouldBeTracked()) {
             savedData.stopTracking(this);
         }
-        if (type.sampling() && !shouldSample(type)) {
-            savedData.stopSampling(this, type);
+        if (type.sampled() && !shouldSample(type)) {
+            savedData.stopSampling(this, (SampledAreaDataComponentType<?>) type);
         }
 
         return component;
@@ -137,14 +138,14 @@ public abstract class Area {
         }
 
         for (var c : other.components.keySet()) {
-            if (c.sampling()) {
-                savedData.startSampling(this, c);
+            if (c.sampled()) {
+                savedData.startSampling(this, (SampledAreaDataComponentType<?>) c);
             }
         }
     }
 
     private boolean shouldBeTracked() {
-        return components.keySet().stream().anyMatch(AreaDataComponentType::tracking);
+        return components.keySet().stream().anyMatch(AreaDataComponentType::entityTracked);
     }
 
     private boolean shouldSample(AreaDataComponentType<?> type) {
@@ -227,12 +228,12 @@ public abstract class Area {
                 continue;
             }
 
-            if (type.tracking()) {
+            if (type.entityTracked()) {
                 savedData.startTracking(this);
             }
 
-            if (type.sampling()) {
-                savedData.startSampling(this, type);
+            if (type.sampled()) {
+                savedData.startSampling(this, (SampledAreaDataComponentType<?>) type);
             }
 
             var r = type.codec().parse(NbtOps.INSTANCE, entry.getValue());

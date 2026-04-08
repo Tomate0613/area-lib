@@ -3,11 +3,13 @@ package dev.doublekekse.area_lib.registry;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+@ApiStatus.Experimental
 public class AreaTypeRegistry {
     private static final Map<Identifier, BiFunction<AreaSavedData, Identifier, Area>> areas = new HashMap<>();
 

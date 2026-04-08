@@ -8,10 +8,12 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+@ApiStatus.Internal
 public record ClientboundAreaSyncPacket(AreaSavedData areaSavedData) implements CustomPacketPayload {
     public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAreaSyncPacket> STREAM_CODEC = CustomPacketPayload.codec(ClientboundAreaSyncPacket::write, ClientboundAreaSyncPacket::new);
     public static final CustomPacketPayload.Type<ClientboundAreaSyncPacket> TYPE = new CustomPacketPayload.Type<>(AreaLib.id("clientbound_area_sync_packet"));

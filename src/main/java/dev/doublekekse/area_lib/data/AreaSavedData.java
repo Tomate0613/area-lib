@@ -5,7 +5,8 @@ import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.AreaListeners;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
-import dev.doublekekse.area_lib.component.AreaDataComponentType;
+import dev.doublekekse.area_lib.component.EntityTrackedAreaDataComponentType;
+import dev.doublekekse.area_lib.component.SampledAreaDataComponentType;
 import dev.doublekekse.area_lib.duck.EntityDuck;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
@@ -199,9 +200,10 @@ public class AreaSavedData extends SavedData {
      * <p>
      * This is primarily intended for unit area components
      * </p>
+     *
      * <p>
-     * If only checking irregularly using a {@code SAMPLED} component should be preferred
-     * {@link #isInSampledAreaWith(AreaDataComponentType, Entity)}
+     * If only checking irregularly using a {@link SampledAreaDataComponentType} should be preferred
+     * {@link #isInSampledAreaWith(SampledAreaDataComponentType, Entity)}
      * </p>
      *
      * @param type   the tracked component type to look for
@@ -209,9 +211,7 @@ public class AreaSavedData extends SavedData {
      * @return true if the entity is inside at least one entity-tracked area
      * containing the component, false otherwise
      */
-    public boolean isInEntityTrackedAreaWith(AreaDataComponentType<?> type, Entity entity) {
-        assert type.type() == AreaDataComponentType.Type.ENTITY_TRACKED;
-
+    public boolean isInEntityTrackedAreaWith(EntityTrackedAreaDataComponentType<?> type, Entity entity) {
         for (Area area : getEntityTrackedAreas(entity)) {
             if (area.has(type)) return true;
         }
@@ -222,50 +222,34 @@ public class AreaSavedData extends SavedData {
     /**
      * Returns all sampled areas that include the given point with a matching component
      *
-     * <p>
-     * <strong>Important:</strong> The provided {@code type} must be of type
-     * {@code SAMPLED}. Passing a {@code SIMPLE} or {@code ENTITY_TRACKED} component
-     * will result in incorrect behavior.
-     * </p>
-     *
      * @param type  the component type
      * @param level the level to check in
      * @param pos   the position to check for
      * @return a list of all sampled areas with matching component containing the position
      * @see AreaDataComponentTypeRegistry#registerSampled(Identifier, Codec)
-     * @see #getSampledAreas(AreaDataComponentType, Entity)
+     * @see #getSampledAreas(SampledAreaDataComponentType, Entity)
      */
-    public List<Area> getSampledAreas(AreaDataComponentType<?> type, Level level, Vec3 pos) {
-        assert type.type() == AreaDataComponentType.Type.SAMPLED;
-
-        return samplingAreas[type.index()].findAreasContaining(level, pos);
+    public Collection<Area> getSampledAreas(SampledAreaDataComponentType<?> type, Level level, Vec3 pos) {
+        return samplingAreas[type.index].findAreasContaining(level, pos);
     }
 
     /**
      * Returns all sampled areas that include the entities position
      *
      * <p>
-     * <strong>Important:</strong> The provided {@code type} must be of type
-     * {@code SAMPLED}. Passing a {@code SIMPLE} or {@code ENTITY_TRACKED} component
-     * will result in incorrect behavior.
-     * </p>
-     *
-     * <p>
      * If caching of areas might make sense, such as checking which areas the player is in every tick
      * (Which other mods using area lib might also do)
-     * a {@code ENTITY_TRACKED} component might be preferable
+     * a {@link EntityTrackedAreaDataComponentType} might be preferable
      * </p>
      *
      * @param type   the component type
      * @param entity the entity
      * @return a list of all sampled areas with matching component containing the position of the entity
      * @see AreaDataComponentTypeRegistry#registerSampled(Identifier, Codec)
-     * @see #getSampledAreas(AreaDataComponentType, Level, Vec3)
+     * @see #getSampledAreas(SampledAreaDataComponentType, Level, Vec3)
      */
-    public List<Area> getSampledAreas(AreaDataComponentType<?> type, Entity entity) {
-        assert type.type() == AreaDataComponentType.Type.SAMPLED;
-
-        return samplingAreas[type.index()].findAreasContaining(entity.level(), entity.position());
+    public Collection<Area> getSampledAreas(SampledAreaDataComponentType<?> type, Entity entity) {
+        return samplingAreas[type.index].findAreasContaining(entity.level(), entity.position());
     }
 
     /**
@@ -275,11 +259,6 @@ public class AreaSavedData extends SavedData {
      * <p>
      * This is primarily intended for unit area components
      * </p>
-     * <p>
-     * <strong>Important:</strong> The provided {@code type} must be of type
-     * {@code SAMPLED}. Passing a {@code SIMPLE} or {@code ENTITY_TRACKED} component
-     * will result in incorrect behavior.
-     * </p>
      *
      * @param type  the tracked component type to look for
      * @param level the level to check in
@@ -287,10 +266,8 @@ public class AreaSavedData extends SavedData {
      * @return true if the entity is inside at least one sampled area
      * containing the component, false otherwise
      */
-    public boolean isInSampledAreaWith(AreaDataComponentType<?> type, Level level, Vec3 pos) {
-        assert type.type() == AreaDataComponentType.Type.SAMPLED;
-
-        return samplingAreas[type.index()].contains(level, pos);
+    public boolean isInSampledAreaWith(SampledAreaDataComponentType<?> type, Level level, Vec3 pos) {
+        return samplingAreas[type.index].contains(level, pos);
     }
 
     /**
@@ -302,24 +279,18 @@ public class AreaSavedData extends SavedData {
      * </p>
      * <p>
      * If checking regularly on an entity where caching makes sense
-     * using a {@code ENTITY_TRACKED} component should be preferred
-     * {@link #isInEntityTrackedAreaWith(AreaDataComponentType, Entity)}
+     * using a {@link EntityTrackedAreaDataComponentType} component should be preferred
+     * {@link #isInEntityTrackedAreaWith(EntityTrackedAreaDataComponentType, Entity)}
      * </p>
      * <p>
-     * <strong>Important:</strong> The provided {@code type} must be of type
-     * {@code SAMPLED}. Passing a {@code SIMPLE} or {@code ENTITY_TRACKED} component
-     * will result in incorrect behavior.
-     * </p>
      *
      * @param type   the tracked component type to look for
      * @param entity the entity to check
      * @return true if the position is inside at least one sampled area
      * containing the component, false otherwise
      */
-    public boolean isInSampledAreaWith(AreaDataComponentType<?> type, Entity entity) {
-        assert type.type() == AreaDataComponentType.Type.SAMPLED;
-
-        return samplingAreas[type.index()].contains(entity.level(), entity.position());
+    public boolean isInSampledAreaWith(SampledAreaDataComponentType<?> type, Entity entity) {
+        return samplingAreas[type.index].contains(entity.level(), entity.position());
     }
 
     private void sync(MinecraftServer server) {
@@ -371,12 +342,12 @@ public class AreaSavedData extends SavedData {
     }
 
     @ApiStatus.Internal
-    public void startSampling(Area area, AreaDataComponentType<?> type) {
-        samplingAreas[type.index()].add(area.getId());
+    public void startSampling(Area area, SampledAreaDataComponentType<?> type) {
+        samplingAreas[type.index].add(area.getId());
     }
 
     @ApiStatus.Internal
-    public void stopSampling(Area area, AreaDataComponentType<?> type) {
-        samplingAreas[type.index()].remove(area.getId());
+    public void stopSampling(Area area, SampledAreaDataComponentType<?> type) {
+        samplingAreas[type.index].remove(area.getId());
     }
 }

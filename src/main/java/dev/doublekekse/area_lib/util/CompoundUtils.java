@@ -2,7 +2,9 @@ package dev.doublekekse.area_lib.util;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.AABB;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Internal
 public class CompoundUtils {
     public static CompoundTag fromAABB(AABB aabb) {
         var tag = new CompoundTag();

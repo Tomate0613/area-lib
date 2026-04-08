@@ -11,9 +11,11 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.concurrent.CompletableFuture;
 
+@ApiStatus.Internal
 public class AreaComponentTypeArgument {
     public static final DynamicCommandExceptionType ERROR_UNKNOWN_COMPONENT_TYPE = new DynamicCommandExceptionType((type) -> Component.translatableEscape("area_lib.commands.area.error_component_type_does_not_exist", type));
 

@@ -24,16 +24,6 @@ public class AreaArgument {
     public static final DynamicCommandExceptionType ERROR_UNKNOWN_AREA = new DynamicCommandExceptionType((object) -> Component.translatableEscape("area_lib.commands.area.error_does_not_exist", object));
     public static final DynamicCommandExceptionType ERROR_NOT_COMPOSITE_AREA = new DynamicCommandExceptionType((object) -> Component.translatableEscape("area_lib.commands.area.error_is_not_composite", object));
 
-    /**
-     * Use {@link IdentifierArgument#id()}
-     * with {@link AreaArgument#listSuggestions(CommandContext, SuggestionsBuilder)}
-     * as suggestions instead.
-     */
-    @Deprecated
-    public static IdentifierArgument area() {
-        return IdentifierArgument.id();
-    }
-
     public static CompletableFuture<Suggestions> listSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         var savedData = AreaLib.getSavedData(context.getSource().getLevel());
 

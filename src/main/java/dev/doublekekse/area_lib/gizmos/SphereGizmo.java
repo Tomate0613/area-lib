@@ -4,8 +4,10 @@ import net.minecraft.gizmos.Gizmo;
 import net.minecraft.gizmos.GizmoPrimitives;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NonNull;
 
+@ApiStatus.Internal
 public record SphereGizmo(Vec3 pos, double radius, GizmoStyle style) implements Gizmo {
     private static final int SLICES = 16;
     private static final int STACKS = 10;

@@ -4,24 +4,13 @@ import com.mojang.serialization.Codec;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
-public record AreaDataComponentType<T>(Identifier id, Codec<T> codec, Type type, int index) {
-    @ApiStatus.Internal
-    public enum Type {
-        SIMPLE,
-        ENTITY_TRACKED,
-        SAMPLED
-    }
+public sealed interface AreaDataComponentType<T> permits BaseAreaDataComponentType {
+    Identifier id();
+    Codec<T> codec();
 
     @ApiStatus.Internal
-    public AreaDataComponentType {}
+    boolean entityTracked();
 
     @ApiStatus.Internal
-    public boolean tracking() {
-        return type == Type.ENTITY_TRACKED;
-    }
-
-    @ApiStatus.Internal
-    public boolean sampling() {
-        return type == Type.SAMPLED;
-    }
+    boolean sampled();
 }

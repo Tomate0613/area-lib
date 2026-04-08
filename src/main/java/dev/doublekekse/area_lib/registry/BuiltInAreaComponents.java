@@ -5,7 +5,9 @@ import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.component.AreaDataComponentType;
 import dev.doublekekse.area_lib.util.AreaLibExtraCodecs;
 import net.minecraft.gizmos.GizmoStyle;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Experimental
 public class BuiltInAreaComponents {
     public static final AreaDataComponentType<GizmoStyle> GIZMO_STYLE_COMPONENT = register("gizmo_style", AreaLibExtraCodecs.GIZMO_STYLE_CODEC);
 

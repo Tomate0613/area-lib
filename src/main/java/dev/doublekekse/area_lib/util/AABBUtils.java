@@ -3,7 +3,9 @@ package dev.doublekekse.area_lib.util;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Internal
 public class AABBUtils {
     public static AABB encapsulate(AABB a, AABB b) {
         Vec3 newMin = new Vec3(Math.min(a.minX, b.minX), Math.min(a.minY, b.minY), Math.min(a.minZ, b.minZ));
