@@ -9,7 +9,6 @@ public class AreaClientData {
     @ApiStatus.Experimental
     public static AreaSavedData INSTANCE;
 
-    @ApiStatus.Experimental
     public static AreaSavedData getClientLevelData() {
         return INSTANCE;
     }
