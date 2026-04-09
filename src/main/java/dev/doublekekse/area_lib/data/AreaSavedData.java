@@ -26,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Predicate;
 
 public class AreaSavedData extends SavedData {
     private final Map<Identifier, Area> areas = new HashMap<>();
@@ -137,7 +136,7 @@ public class AreaSavedData extends SavedData {
     /**
      * Finds all areas containing the specified position.
      * Note: This method performs a linear search through all areas and might be slow.
-     * For regular position checks, consider using {@link #getEntityTrackedAreas} instead.
+     * For regular position checks, consider using {@link #getSampledAreas(SampledAreaComponentType, Level, Vec3)} instead.
      *
      * @param level the level to check in
      * @param pos   the position to check for
@@ -157,7 +156,7 @@ public class AreaSavedData extends SavedData {
     /**
      * Finds any areas containing the specified position.
      * Note: This method performs a linear search through all areas and might be slow.
-     * For regular position checks, consider using {@link #getEntityTrackedAreas} instead.
+     * For regular position checks, consider using {@link #getSampledAreas(SampledAreaComponentType, Level, Vec3)} instead.
      *
      * @param level the level to check in
      * @param pos   the position to check for
