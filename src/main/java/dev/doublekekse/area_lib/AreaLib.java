@@ -56,12 +56,12 @@ public class AreaLib implements ModInitializer {
     }
 
     public static Area getClientArea(Identifier id) {
-        return AreaClientData.getClientLevelData().get(id);
+        return AreaClientData.INSTANCE.get(id);
     }
 
     public static AreaSavedData getSavedData(Level level) {
         if (level.isClientSide()) {
-            return AreaClientData.getClientLevelData();
+            return AreaClientData.INSTANCE;
         } else {
             return AreaSavedData.getServerData(Objects.requireNonNull(level.getServer()));
         }
