@@ -2,19 +2,19 @@ package dev.doublekekse.area_lib.registry;
 
 import com.mojang.serialization.Codec;
 import dev.doublekekse.area_lib.AreaLib;
-import dev.doublekekse.area_lib.component.AreaDataComponentType;
+import dev.doublekekse.area_lib.component.AreaComponentType;
 import dev.doublekekse.area_lib.util.AreaLibExtraCodecs;
 import net.minecraft.gizmos.GizmoStyle;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Experimental
 public class BuiltInAreaComponents {
-    public static final AreaDataComponentType<GizmoStyle> GIZMO_STYLE_COMPONENT = register("gizmo_style", AreaLibExtraCodecs.GIZMO_STYLE_CODEC);
+    public static final AreaComponentType<GizmoStyle> GIZMO_STYLE_COMPONENT = register("gizmo_style", AreaLibExtraCodecs.GIZMO_STYLE_CODEC);
 
-    private static <T> AreaDataComponentType<T> register(String path, Codec<T> codec) {
+    private static <T> AreaComponentType<T> register(String path, Codec<T> codec) {
         var id = AreaLib.id(path);
 
-        return AreaDataComponentTypeRegistry.register(id, codec);
+        return AreaComponentRegistry.register(id, codec);
     }
 
     public static void register() {

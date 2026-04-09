@@ -4,12 +4,12 @@ import com.mojang.serialization.Codec;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
-sealed class BaseAreaDataComponentType<T> implements AreaDataComponentType<T> permits EntityTrackedAreaDataComponentType, SampledAreaDataComponentType, SimpleAreaDataComponentType {
+sealed class BaseAreaComponentType<T> implements AreaComponentType<T> permits EntityTrackedAreaComponentType, SampledAreaComponentType, SimpleAreaComponentType {
     final Type type;
     final Identifier id;
     final Codec<T> codec;
 
-    BaseAreaDataComponentType(Type type, Identifier id, Codec<T> codec) {
+    BaseAreaComponentType(Type type, Identifier id, Codec<T> codec) {
         this.type = type;
         this.id = id;
         this.codec = codec;

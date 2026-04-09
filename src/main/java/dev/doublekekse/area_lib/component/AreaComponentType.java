@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
-public sealed interface AreaDataComponentType<T> permits BaseAreaDataComponentType {
+public sealed interface AreaComponentType<T> permits BaseAreaComponentType {
     Identifier id();
     Codec<T> codec();
 

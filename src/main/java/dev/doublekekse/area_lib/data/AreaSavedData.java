@@ -5,11 +5,11 @@ import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.AreaListeners;
 import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
-import dev.doublekekse.area_lib.component.EntityTrackedAreaDataComponentType;
-import dev.doublekekse.area_lib.component.SampledAreaDataComponentType;
+import dev.doublekekse.area_lib.component.EntityTrackedAreaComponentType;
+import dev.doublekekse.area_lib.component.SampledAreaComponentType;
 import dev.doublekekse.area_lib.duck.EntityDuck;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
-import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
+import dev.doublekekse.area_lib.registry.AreaComponentRegistry;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import dev.doublekekse.area_lib.areas.CompositeArea;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -32,7 +32,7 @@ public class AreaSavedData extends SavedData {
     private final Map<Identifier, Area> areas = new HashMap<>();
 
     private final LazyAreaBVHTree trackedAreas = new LazyAreaBVHTree(this);
-    private final LazyAreaBVHTree[] samplingAreas = new LazyAreaBVHTree[AreaDataComponentTypeRegistry.samplingCount()];
+    private final LazyAreaBVHTree[] samplingAreas = new LazyAreaBVHTree[AreaComponentRegistry.samplingCount()];
 
     private boolean isInitialized = true;
 
@@ -187,7 +187,7 @@ public class AreaSavedData extends SavedData {
      *
      * @param entity the entity to check for
      * @return a list of all entity tracked areas containing the entity
-     * @see AreaDataComponentTypeRegistry#registerEntityTracked(Identifier, Codec)
+     * @see AreaComponentRegistry#registerEntityTracked(Identifier, Codec)
      */
     public Collection<Area> getEntityTrackedAreas(Entity entity) {
         return ((EntityDuck) entity).area_lib$getAreas(this);
@@ -202,8 +202,8 @@ public class AreaSavedData extends SavedData {
      * </p>
      *
      * <p>
-     * If only checking irregularly using a {@link SampledAreaDataComponentType} should be preferred
-     * {@link #isInSampledAreaWith(SampledAreaDataComponentType, Entity)}
+     * If only checking irregularly using a {@link SampledAreaComponentType} should be preferred
+     * {@link #isInSampledAreaWith(SampledAreaComponentType, Entity)}
      * </p>
      *
      * @param type   the tracked component type to look for
@@ -211,7 +211,7 @@ public class AreaSavedData extends SavedData {
      * @return true if the entity is inside at least one entity-tracked area
      * containing the component, false otherwise
      */
-    public boolean isInEntityTrackedAreaWith(EntityTrackedAreaDataComponentType<?> type, Entity entity) {
+    public boolean isInEntityTrackedAreaWith(EntityTrackedAreaComponentType<?> type, Entity entity) {
         for (Area area : getEntityTrackedAreas(entity)) {
             if (area.has(type)) return true;
         }
@@ -226,10 +226,10 @@ public class AreaSavedData extends SavedData {
      * @param level the level to check in
      * @param pos   the position to check for
      * @return a list of all sampled areas with matching component containing the position
-     * @see AreaDataComponentTypeRegistry#registerSampled(Identifier, Codec)
-     * @see #getSampledAreas(SampledAreaDataComponentType, Entity)
+     * @see AreaComponentRegistry#registerSampled(Identifier, Codec)
+     * @see #getSampledAreas(SampledAreaComponentType, Entity)
      */
-    public Collection<Area> getSampledAreas(SampledAreaDataComponentType<?> type, Level level, Vec3 pos) {
+    public Collection<Area> getSampledAreas(SampledAreaComponentType<?> type, Level level, Vec3 pos) {
         return samplingAreas[type.index].findAreasContaining(level, pos);
     }
 
@@ -239,16 +239,16 @@ public class AreaSavedData extends SavedData {
      * <p>
      * If caching of areas might make sense, such as checking which areas the player is in every tick
      * (Which other mods using area lib might also do)
-     * a {@link EntityTrackedAreaDataComponentType} might be preferable
+     * a {@link EntityTrackedAreaComponentType} might be preferable
      * </p>
      *
      * @param type   the component type
      * @param entity the entity
      * @return a list of all sampled areas with matching component containing the position of the entity
-     * @see AreaDataComponentTypeRegistry#registerSampled(Identifier, Codec)
-     * @see #getSampledAreas(SampledAreaDataComponentType, Level, Vec3)
+     * @see AreaComponentRegistry#registerSampled(Identifier, Codec)
+     * @see #getSampledAreas(SampledAreaComponentType, Level, Vec3)
      */
-    public Collection<Area> getSampledAreas(SampledAreaDataComponentType<?> type, Entity entity) {
+    public Collection<Area> getSampledAreas(SampledAreaComponentType<?> type, Entity entity) {
         return samplingAreas[type.index].findAreasContaining(entity.level(), entity.position());
     }
 
@@ -266,7 +266,7 @@ public class AreaSavedData extends SavedData {
      * @return true if the entity is inside at least one sampled area
      * containing the component, false otherwise
      */
-    public boolean isInSampledAreaWith(SampledAreaDataComponentType<?> type, Level level, Vec3 pos) {
+    public boolean isInSampledAreaWith(SampledAreaComponentType<?> type, Level level, Vec3 pos) {
         return samplingAreas[type.index].contains(level, pos);
     }
 
@@ -279,8 +279,8 @@ public class AreaSavedData extends SavedData {
      * </p>
      * <p>
      * If checking regularly on an entity where caching makes sense
-     * using a {@link EntityTrackedAreaDataComponentType} component should be preferred
-     * {@link #isInEntityTrackedAreaWith(EntityTrackedAreaDataComponentType, Entity)}
+     * using a {@link EntityTrackedAreaComponentType} component should be preferred
+     * {@link #isInEntityTrackedAreaWith(EntityTrackedAreaComponentType, Entity)}
      * </p>
      * <p>
      *
@@ -289,7 +289,7 @@ public class AreaSavedData extends SavedData {
      * @return true if the position is inside at least one sampled area
      * containing the component, false otherwise
      */
-    public boolean isInSampledAreaWith(SampledAreaDataComponentType<?> type, Entity entity) {
+    public boolean isInSampledAreaWith(SampledAreaComponentType<?> type, Entity entity) {
         return samplingAreas[type.index].contains(entity.level(), entity.position());
     }
 
@@ -342,12 +342,12 @@ public class AreaSavedData extends SavedData {
     }
 
     @ApiStatus.Internal
-    public void startSampling(Area area, SampledAreaDataComponentType<?> type) {
+    public void startSampling(Area area, SampledAreaComponentType<?> type) {
         samplingAreas[type.index].add(area.getId());
     }
 
     @ApiStatus.Internal
-    public void stopSampling(Area area, SampledAreaDataComponentType<?> type) {
+    public void stopSampling(Area area, SampledAreaComponentType<?> type) {
         samplingAreas[type.index].remove(area.getId());
     }
 }

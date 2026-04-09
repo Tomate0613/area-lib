@@ -2,10 +2,10 @@ package dev.doublekekse.area_lib;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.client.AreaLibClient;
-import dev.doublekekse.area_lib.component.AreaDataComponentType;
-import dev.doublekekse.area_lib.component.SampledAreaDataComponentType;
+import dev.doublekekse.area_lib.component.AreaComponentType;
+import dev.doublekekse.area_lib.component.SampledAreaComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
-import dev.doublekekse.area_lib.registry.AreaDataComponentTypeRegistry;
+import dev.doublekekse.area_lib.registry.AreaComponentRegistry;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
@@ -30,7 +30,7 @@ public abstract class Area {
     protected final AreaSavedData savedData;
     protected final Identifier id;
 
-    private final Map<AreaDataComponentType<Object>, Object> components = new Reference2ObjectArrayMap<>();
+    private final Map<AreaComponentType<Object>, Object> components = new Reference2ObjectArrayMap<>();
 
     public Area(AreaSavedData savedData, Identifier id) {
         this.savedData = savedData;
@@ -45,7 +45,7 @@ public abstract class Area {
      * @return the component if present, otherwise null
      */
     @SuppressWarnings("unchecked")
-    public <T> T get(AreaDataComponentType<T> type) {
+    public <T> T get(AreaComponentType<T> type) {
         return (T) components.get(type);
     }
 
@@ -55,7 +55,7 @@ public abstract class Area {
      * @param type the type of component to check for
      * @return true if the component is present, false otherwise
      */
-    public boolean has(AreaDataComponentType<?> type) {
+    public boolean has(AreaComponentType<?> type) {
         return components.containsKey(type);
     }
 
@@ -68,7 +68,7 @@ public abstract class Area {
      * @return the component if present, otherwise the default value
      */
     @SuppressWarnings("unchecked")
-    public <T> T getOrDefault(AreaDataComponentType<T> type, T defaultValue) {
+    public <T> T getOrDefault(AreaComponentType<T> type, T defaultValue) {
         return (T) components.getOrDefault(type, defaultValue);
     }
 
@@ -82,14 +82,14 @@ public abstract class Area {
      * @param <T>       the component type
      */
     @SuppressWarnings("unchecked")
-    public <T> void put(@Nullable MinecraftServer server, AreaDataComponentType<T> type, T component) {
-        components.put((AreaDataComponentType<Object>) type, component);
+    public <T> void put(@Nullable MinecraftServer server, AreaComponentType<T> type, T component) {
+        components.put((AreaComponentType<Object>) type, component);
 
         if (type.entityTracked()) {
             savedData.startTracking(this);
         }
         if (type.sampled()) {
-            savedData.startSampling(this, (SampledAreaDataComponentType<?>) type);
+            savedData.startSampling(this, (SampledAreaComponentType<?>) type);
         }
 
         invalidate(server);
@@ -105,7 +105,7 @@ public abstract class Area {
      * @return the removed component if present, otherwise null
      */
     @SuppressWarnings("unchecked")
-    public <T> T remove(@Nullable MinecraftServer server, AreaDataComponentType<T> type) {
+    public <T> T remove(@Nullable MinecraftServer server, AreaComponentType<T> type) {
         var component = (T) components.remove(type);
         invalidate(server);
 
@@ -113,7 +113,7 @@ public abstract class Area {
             savedData.stopTracking(this);
         }
         if (type.sampled() && !shouldSample(type)) {
-            savedData.stopSampling(this, (SampledAreaDataComponentType<?>) type);
+            savedData.stopSampling(this, (SampledAreaComponentType<?>) type);
         }
 
         return component;
@@ -139,16 +139,16 @@ public abstract class Area {
 
         for (var c : other.components.keySet()) {
             if (c.sampled()) {
-                savedData.startSampling(this, (SampledAreaDataComponentType<?>) c);
+                savedData.startSampling(this, (SampledAreaComponentType<?>) c);
             }
         }
     }
 
     private boolean shouldBeTracked() {
-        return components.keySet().stream().anyMatch(AreaDataComponentType::entityTracked);
+        return components.keySet().stream().anyMatch(AreaComponentType::entityTracked);
     }
 
-    private boolean shouldSample(AreaDataComponentType<?> type) {
+    private boolean shouldSample(AreaComponentType<?> type) {
         return components.keySet().stream().anyMatch(s -> s.equals(type));
     }
 
@@ -222,7 +222,7 @@ public abstract class Area {
         var componentsTag = compoundTag.getCompound("components").orElseGet(CompoundTag::new);
         for (var entry : componentsTag.entrySet()) {
             var id = Identifier.tryParse(entry.getKey());
-            var type = AreaDataComponentTypeRegistry.get(id);
+            var type = AreaComponentRegistry.get(id);
 
             if (type == null) {
                 continue;
@@ -233,11 +233,11 @@ public abstract class Area {
             }
 
             if (type.sampled()) {
-                savedData.startSampling(this, (SampledAreaDataComponentType<?>) type);
+                savedData.startSampling(this, (SampledAreaComponentType<?>) type);
             }
 
             var r = type.codec().parse(NbtOps.INSTANCE, entry.getValue());
-            components.put((AreaDataComponentType<Object>) type, r.getOrThrow());
+            components.put((AreaComponentType<Object>) type, r.getOrThrow());
         }
     }
 

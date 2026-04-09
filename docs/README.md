@@ -36,8 +36,8 @@ Components can be set and removed in-game using the  \
 Basic area components can hold data
 
 ```java
-public static final AreaDataComponent<String> AREA_DESCRIPTION = 
-    AreaDataComponentRegistry.register(Identifier.fromNamespaceAndPath("my_mod", "area_description"), Codec.STRING);
+public static final AreaComponent<String> AREA_DESCRIPTION = 
+    AreaComponentRegistry.register(Identifier.fromNamespaceAndPath("my_mod", "area_description"), Codec.STRING);
 ```
 
 ## Sampled
@@ -47,8 +47,8 @@ Additionally, they also allow for an easy and fast way to
 - Get all areas with the component that contain a specific position or entity
 
 ```java
-public static final SampledAreaDataComponentType<Unit> BUILDING_ALLOWED =
-    AreaDataComponentRegistry.registerSampled(Identifier.fromNamespaceAndPath("my_mod", "building_allowed"), Unit.CODEC);
+public static final SampledAreaComponentType<Unit> BUILDING_ALLOWED =
+    AreaComponentRegistry.registerSampled(Identifier.fromNamespaceAndPath("my_mod", "building_allowed"), Unit.CODEC);
 
 private boolean buildingAllowed(AreaSavedData data, Level level, Vec3 position) {
     return data.isInSampledAreaWith(BUILDING_ALLOWED, level, position);
@@ -73,8 +73,8 @@ This means if multiple mods request which areas a player is in the result does n
 Generally these should be used instead of sampled components, when checking regularly on entities that other mods might also need to check (such as the player)
 
 ```java
-public static final EnityTrackedAreaDataComponentType<Unit> MOB_EFFECT =
-    AreaDataComponentRegistry.registerEntityTracked(Identifier.fromNamespaceAndPath("my_mod", "mob_effect"), MobEffect.CODEC);
+public static final EnityTrackedAreaComponentType<Unit> MOB_EFFECT =
+    AreaComponentRegistry.registerEntityTracked(Identifier.fromNamespaceAndPath("my_mod", "mob_effect"), MobEffect.CODEC);
 
 private onPlayerTick(AreaSavedData data, ServerPlayer player) {
     var areas = data.getEntityTrackedAreas(player);

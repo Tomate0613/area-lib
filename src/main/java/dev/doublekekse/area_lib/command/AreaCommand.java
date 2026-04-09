@@ -19,7 +19,7 @@ import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.command.argument.ARGBColorArgument;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
 import dev.doublekekse.area_lib.command.argument.AreaComponentTypeArgument;
-import dev.doublekekse.area_lib.component.AreaDataComponentType;
+import dev.doublekekse.area_lib.component.AreaComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import net.minecraft.commands.CommandSourceStack;
@@ -78,7 +78,7 @@ public class AreaCommand {
                             return 0;
                         }
 
-                        area.put(ctx.getSource().getServer(), (AreaDataComponentType<Object>) type, parsed.getOrThrow());
+                        area.put(ctx.getSource().getServer(), (AreaComponentType<Object>) type, parsed.getOrThrow());
                         area.invalidate(ctx.getSource().getServer());
 
                         ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.components.set", type.id().toString(), value.toString(), area.toString()), true);
@@ -86,7 +86,7 @@ public class AreaCommand {
                         return 1;
                     })))).then(literal("get").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listPresentSuggestions).executes(ctx -> {
                         var area = AreaArgument.getArea(ctx, "id");
-                        var type = (AreaDataComponentType<Object>) AreaComponentTypeArgument.getComponentType(ctx, "component_type");
+                        var type = (AreaComponentType<Object>) AreaComponentTypeArgument.getComponentType(ctx, "component_type");
 
                         if (!area.has(type)) {
                             ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_component_not_present", area.toString(), type.id().toString()));

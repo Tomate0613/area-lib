@@ -4,9 +4,9 @@ import com.mojang.serialization.Codec;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
-public final class SimpleAreaDataComponentType<T> extends BaseAreaDataComponentType<T> {
+public final class SimpleAreaComponentType<T> extends BaseAreaComponentType<T> {
     @ApiStatus.Internal
-    public SimpleAreaDataComponentType(Identifier id, Codec<T> codec) {
+    public SimpleAreaComponentType(Identifier id, Codec<T> codec) {
         super(Type.SIMPLE, id, codec);
     }
 }
