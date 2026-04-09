@@ -8,18 +8,23 @@ Create areas using `/area create`
 For example `/area create <id> box ~ ~ ~ ~5 ~5 ~5` creates a 5x5x5 box area
 
 ## Modifying area properties
-You can change some built-in properties, such as color and priority using
+### Built-In
+Some built-in properties, such as color and priority can be changed using
 `/area modify <id> <property> <value>`
 
-## Union areas
-You can create union areas using <br>
-`/area create <id> union <...areas>`<br>
+### Components
+Components can be set and removed using
+`/area modify <id> components (set|remove|get|copy_from) ...`
 
-Adding additional sub-areas can be done using <br>
+## Union areas
+You can create union areas using \
+`/area create <id> union <...areas>` \
+
+Adding additional sub-areas can be done using \
 `/area modify_composite <id> add <sub_area>`
 
-Similarly, you can remove a sub-area by running<br>
-`/area modify_composite <id> remove <sub_area>`<br>
+Similarly, ub-areas can be removed by running \
+`/area modify_composite <id> remove <sub_area>` \
 
 ## Deleting areas
 To completely delete an area use
@@ -33,4 +38,4 @@ To check which area you are currently in, use
 Note that these areas don't do anything by themselves, but require additional mods that can implement specific functionality for them. For example [area-tools](https://modrinth.com/mod/area-tools) adds various area related tools using this library
 
 ## Documentation
-Partial documentation is available [here](https://github.com/Tomate0613/area-lib/wiki)
+Partial documentation is available [here](./docs/README.md)
