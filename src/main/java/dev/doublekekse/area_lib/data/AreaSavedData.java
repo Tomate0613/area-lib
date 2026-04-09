@@ -325,12 +325,6 @@ public class AreaSavedData extends SavedData {
         return trackedAreas.findAreasContaining(level, pos);
     }
 
-    @ApiStatus.Experimental
-    @ApiStatus.Internal
-    public List<Area> getEntityTrackedAreas(Level level, Vec3 pos, Predicate<Area> predicate) {
-        return trackedAreas.findAreasContaining(level, pos, predicate);
-    }
-
     @ApiStatus.Internal
     public void startTracking(Area area) {
         trackedAreas.add(area.getId());
