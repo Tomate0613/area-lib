@@ -12,7 +12,8 @@ import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
@@ -25,17 +26,18 @@ public class AreaLib implements ModInitializer {
     @Override
     public void onInitialize() {
         PayloadTypeRegistry.clientboundPlay().register(ClientboundAreaSyncPacket.TYPE, ClientboundAreaSyncPacket.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundConfiguration().register(ClientboundAreaSyncPacket.TYPE, ClientboundAreaSyncPacket.STREAM_CODEC);
 
         CommandRegistrationCallback.EVENT.register(
-            (dispatcher, registryAccess, environment) -> {
+            (dispatcher, _, _) -> {
                 AreaCommand.register(dispatcher);
             }
         );
 
-        ServerPlayConnectionEvents.JOIN.register((listener, packetSender, server) -> {
+        ServerConfigurationConnectionEvents.CONFIGURE.register(((listener, server) -> {
             var savedData = AreaSavedData.getServerData(server);
-            packetSender.sendPacket(new ClientboundAreaSyncPacket(savedData));
-        });
+            ServerConfigurationNetworking.send(listener, new ClientboundAreaSyncPacket(savedData));
+        }));
 
         AreaTypeRegistry.register(BoxArea::new, id("box"));
         AreaTypeRegistry.register(UnionArea::new, id("union"));
