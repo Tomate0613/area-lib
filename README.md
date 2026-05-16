@@ -18,13 +18,13 @@ Components can be set and removed using
 
 ## Union areas
 You can create union areas using \
-`/area create <id> union <...areas>` \
+`/area create <id> union <...areas>`
 
 Adding additional sub-areas can be done using \
 `/area modify_composite <id> add <sub_area>`
 
 Similarly, ub-areas can be removed by running \
-`/area modify_composite <id> remove <sub_area>` \
+`/area modify_composite <id> remove <sub_area>`
 
 ## Deleting areas
 To completely delete an area use
