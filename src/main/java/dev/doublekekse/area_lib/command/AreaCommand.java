@@ -28,8 +28,10 @@ import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.NbtTagArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.ApiStatus;
@@ -66,24 +68,15 @@ public class AreaCommand {
                     .then(literal("fill_color").then(argument("color", StringArgumentType.word())
                         .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(s.stroke(), s.strokeWidth(), ARGBColorArgument.getColor(ctx, "color"))))))
                 ).then(literal("components")
-                    .then(literal("set").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listSuggestions).then(argument("value", NbtTagArgument.nbtTag()).executes(ctx -> {
-                        var area = AreaArgument.getArea(ctx, "id");
+                    .then(literal("set").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listSuggestions).executes(ctx -> {
+                        var type = AreaComponentTypeArgument.getComponentType(ctx, "component_type");
+
+                        return setComponent(ctx, type, new CompoundTag());
+                    }).then(argument("value", NbtTagArgument.nbtTag()).executes(ctx -> {
                         var type = AreaComponentTypeArgument.getComponentType(ctx, "component_type");
                         var value = NbtTagArgument.getNbtTag(ctx, "value");
 
-                        var parsed = type.codec().parse(NbtOps.INSTANCE, value);
-
-                        if (parsed.error().isPresent()) {
-                            ctx.getSource().sendFailure(Component.literal(parsed.error().get().message()));
-                            return 0;
-                        }
-
-                        area.put(ctx.getSource().getServer(), (AreaComponentType<Object>) type, parsed.getOrThrow());
-                        area.invalidate(ctx.getSource().getServer());
-
-                        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.components.set", type.id().toString(), value.toString(), area.toString()), true);
-
-                        return 1;
+                        return setComponent(ctx, type, value);
                     })))).then(literal("get").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listPresentSuggestions).executes(ctx -> {
                         var area = AreaArgument.getArea(ctx, "id");
                         var type = (AreaComponentType<Object>) AreaComponentTypeArgument.getComponentType(ctx, "component_type");
@@ -207,6 +200,24 @@ public class AreaCommand {
                 return size;
             }))
         );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int setComponent(CommandContext<CommandSourceStack> ctx, AreaComponentType<?> type, Tag value) throws CommandSyntaxException {
+        var area = AreaArgument.getArea(ctx, "id");
+        var parsed = type.codec().parse(NbtOps.INSTANCE, value);
+
+        if (parsed.error().isPresent()) {
+            ctx.getSource().sendFailure(Component.literal(parsed.error().get().message()));
+            return 0;
+        }
+
+        area.put(ctx.getSource().getServer(), (AreaComponentType<Object>) type, parsed.getOrThrow());
+        area.invalidate(ctx.getSource().getServer());
+
+        ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.components.set", type.id().toString(), value.toString(), area.toString()), true);
+
+        return 1;
     }
 
     @FunctionalInterface
