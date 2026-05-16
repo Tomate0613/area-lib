@@ -6,6 +6,7 @@ import dev.doublekekse.area_lib.areas.UnionArea;
 import dev.doublekekse.area_lib.command.AreaCommand;
 import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
+import dev.doublekekse.area_lib.duck.MinecraftServerDuck;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
@@ -19,7 +20,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class AreaLib implements ModInitializer {
@@ -35,7 +35,7 @@ public class AreaLib implements ModInitializer {
         );
 
         ServerConfigurationConnectionEvents.CONFIGURE.register(((listener, server) -> {
-            var savedData = AreaSavedData.getServerData(server);
+            var savedData = getSavedData(server);
             ServerConfigurationNetworking.send(listener, new ClientboundAreaSyncPacket(savedData));
         }));
 
@@ -51,7 +51,7 @@ public class AreaLib implements ModInitializer {
     }
 
     public static Area getServerArea(MinecraftServer server, Identifier id) {
-        return AreaSavedData.getServerData(server).get(id);
+        return getSavedData(server).get(id);
     }
 
     public static Area getClientArea(Identifier id) {
@@ -62,8 +62,12 @@ public class AreaLib implements ModInitializer {
         if (level.isClientSide()) {
             return AreaClientData.INSTANCE;
         } else {
-            return AreaSavedData.getServerData(Objects.requireNonNull(level.getServer()));
+            return getSavedData(level.getServer());
         }
+    }
+
+    public static AreaSavedData getSavedData(MinecraftServer server) {
+        return ((MinecraftServerDuck) server).area_lib$getAreaSavedData();
     }
 
     @ApiStatus.Experimental

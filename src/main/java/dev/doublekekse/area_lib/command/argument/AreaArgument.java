@@ -9,7 +9,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.areas.CompositeArea;
-import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
@@ -49,7 +48,7 @@ public class AreaArgument {
 
     public static Area getArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
         var identifier = context.getArgument(name, Identifier.class);
-        var savedData = AreaSavedData.getServerData(context.getSource().getServer());
+        var savedData = AreaLib.getSavedData(context.getSource().getServer());
 
         if (savedData.has(identifier)) {
             return savedData.get(identifier);
@@ -60,7 +59,7 @@ public class AreaArgument {
 
     public static CompositeArea getCompositeArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
         var identifier = context.getArgument(name, Identifier.class);
-        var savedData = AreaSavedData.getServerData(context.getSource().getServer());
+        var savedData = AreaLib.getSavedData(context.getSource().getServer());
 
         if (!savedData.has(identifier)) {
             throw ERROR_UNKNOWN_AREA.create(identifier);
@@ -80,7 +79,7 @@ public class AreaArgument {
         var ids = List.of(string.split(" "));
         var list = new ArrayList<Area>();
 
-        var savedData = AreaSavedData.getServerData(context.getSource().getServer());
+        var savedData = AreaLib.getSavedData(context.getSource().getServer());
 
         for (String id : ids) {
             var identifier = Identifier.tryParse(id);

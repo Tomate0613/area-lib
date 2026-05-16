@@ -10,6 +10,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.doublekekse.area_lib.Area;
+import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.areas.BoxArea;
 import dev.doublekekse.area_lib.areas.CompositeArea;
 import dev.doublekekse.area_lib.areas.SphereArea;
@@ -124,7 +125,7 @@ public class AreaCommand {
             )).then(literal("delete").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                 var server = ctx.getSource().getServer();
 
-                var savedData = AreaSavedData.getServerData(server);
+                var savedData = AreaLib.getSavedData(server);
 
                 var area = AreaArgument.getArea(ctx, "id");
                 savedData.remove(server, area);
@@ -136,7 +137,7 @@ public class AreaCommand {
                 var level = ctx.getSource().getLevel();
                 var server = ctx.getSource().getServer();
 
-                var savedData = AreaSavedData.getServerData(server);
+                var savedData = AreaLib.getSavedData(server);
 
                 var pos = ctx.getSource().getPosition();
 
@@ -188,7 +189,7 @@ public class AreaCommand {
             ).then(literal("list").executes(ctx -> {
                 var source = ctx.getSource();
                 var server = source.getServer();
-                var savedData = AreaSavedData.getServerData(server);
+                var savedData = AreaLib.getSavedData(server);
                 var areas = savedData.getAreas();
                 var size = areas.size();
 
@@ -233,7 +234,7 @@ public class AreaCommand {
             var from = Vec3Argument.getVec3(ctx, "from");
             var to = Vec3Argument.getVec3(ctx, "to");
 
-            var savedData = AreaSavedData.getServerData(server);
+            var savedData = AreaLib.getSavedData(server);
             var id = IdentifierArgument.getId(ctx, areaArgumentName);
 
             var area = new BoxArea(savedData, id, level.dimension().identifier(), new AABB(from, to));
@@ -242,7 +243,7 @@ public class AreaCommand {
         })))).then(literal("union").then(argument("areas", StringArgumentType.greedyString()).suggests(AreaArgument::listMultipleSuggestions).executes(ctx -> {
             var server = ctx.getSource().getServer();
             var areas = AreaArgument.getAreas(ctx, "areas");
-            var savedData = AreaSavedData.getServerData(server);
+            var savedData = AreaLib.getSavedData(server);
 
             for (var area : areas) {
                 if (area instanceof CompositeArea) {
@@ -265,7 +266,7 @@ public class AreaCommand {
             var center = Vec3Argument.getVec3(ctx, "center");
             var radius = DoubleArgumentType.getDouble(ctx, "radius");
 
-            var savedData = AreaSavedData.getServerData(server);
+            var savedData = AreaLib.getSavedData(server);
             var id = IdentifierArgument.getId(ctx, areaArgumentName);
 
             var area = new SphereArea(savedData, id, level.dimension().identifier(), center, radius);

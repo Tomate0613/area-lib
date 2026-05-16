@@ -45,7 +45,8 @@ public class AreaSavedData extends SavedData {
         AreaSavedData::save
     );
 
-    private static final SavedDataType<AreaSavedData> type = new SavedDataType<>(AreaLib.id("areas"), AreaSavedData::new,
+    @ApiStatus.Internal
+    public static final SavedDataType<AreaSavedData> TYPE = new SavedDataType<>(AreaLib.id("areas"), AreaSavedData::new,
         AreaSavedData.CODEC,
         null);
 
@@ -296,12 +297,12 @@ public class AreaSavedData extends SavedData {
         server.getPlayerList().getPlayers().forEach(player -> ServerPlayNetworking.send(player, new ClientboundAreaSyncPacket(this)));
     }
 
+    /**
+     * Use {@link AreaLib#getSavedData(MinecraftServer)} instead
+     */
+    @Deprecated
     public static AreaSavedData getServerData(MinecraftServer server) {
-        var storage = server.getDataStorage();
-        var data = storage.computeIfAbsent(type);
-        data.setDirty();
-
-        return data;
+        return AreaLib.getSavedData(server);
     }
 
     /**
