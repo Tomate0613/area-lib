@@ -15,7 +15,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.ApiStatus;
-import org.lwjgl.glfw.GLFW;
 
 @ApiStatus.Internal
 public class AreaLibClient implements ClientModInitializer {
@@ -76,8 +75,8 @@ public class AreaLibClient implements ClientModInitializer {
         // TODO: Figure out how to not place it at the very top
         var keyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
             "area_lib.key.toggle_areas",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_UNKNOWN,
+            InputConstants.Type.KEYBOARD,
+            -1,
             new KeyMapping.Category(AreaLib.id("area_lib"))
         ));
 
@@ -85,7 +84,7 @@ public class AreaLibClient implements ClientModInitializer {
             while (keyBinding.consumeClick()) {
                 renderAreas = !renderAreas;
 
-                client.getChatListener().handleOverlay(Component.translatable("area_lib.key.toggle_areas." + (renderAreas ? "on" : "off")));
+                client.showDebugChat(Component.translatable("area_lib.key.toggle_areas." + (renderAreas ? "on" : "off")));
             }
         });
     }
