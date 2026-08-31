@@ -237,6 +237,14 @@ public abstract class Area {
             }
 
             var r = type.codec().parse(NbtOps.INSTANCE, entry.getValue());
+            if (r.isError()) {
+                if (r.error().isPresent()) {
+                    // TODO
+                    AreaLib.LOGGER.error("Failed to parse component", r.error().get().error().get());
+                }
+                continue;
+            }
+
             components.put((AreaComponentType<Object>) type, r.getOrThrow());
         }
     }
