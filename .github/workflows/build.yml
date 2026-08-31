@@ -8,7 +8,7 @@ jobs:
         java: [
           25,
         ]
-        os: [ ubuntu-24.04 ]
+        os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout repository
