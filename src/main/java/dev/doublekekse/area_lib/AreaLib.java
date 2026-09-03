@@ -1,9 +1,8 @@
 package dev.doublekekse.area_lib;
 
-import dev.doublekekse.area_lib.areas.BoxArea;
-import dev.doublekekse.area_lib.areas.SphereArea;
-import dev.doublekekse.area_lib.areas.UnionArea;
+import dev.doublekekse.area_lib.areas.*;
 import dev.doublekekse.area_lib.command.AreaCommand;
+import dev.doublekekse.area_lib.command.DevAreaCommand;
 import dev.doublekekse.area_lib.data.AreaClientData;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.duck.MinecraftServerDuck;
@@ -15,6 +14,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
@@ -38,6 +38,10 @@ public class AreaLib implements ModInitializer {
         CommandRegistrationCallback.EVENT.register(
             (dispatcher, _, _) -> {
                 AreaCommand.register(dispatcher);
+
+                if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+                    DevAreaCommand.register(dispatcher);
+                }
             }
         );
 
@@ -46,9 +50,12 @@ public class AreaLib implements ModInitializer {
             ServerConfigurationNetworking.send(listener, new ClientboundAreaSyncPacket(savedData));
         }));
 
-        AreaTypeRegistry.register(BoxArea::new, id("box"));
-        AreaTypeRegistry.register(UnionArea::new, id("union"));
-        AreaTypeRegistry.register(SphereArea::new, id("sphere"));
+        AreaTypeRegistry.register(BoxArea::new, BoxArea.IDENTIFIER);
+        AreaTypeRegistry.register(SphereArea::new, SphereArea.IDENTIFIER);
+
+        AreaTypeRegistry.register(UnionArea::new, UnionArea.IDENTIFIER);
+        AreaTypeRegistry.register(IntersectionArea::new, IntersectionArea.IDENTIFIER);
+        AreaTypeRegistry.register(DifferenceArea::new, DifferenceArea.IDENTIFIER);
 
         BuiltInAreaComponents.register();
     }

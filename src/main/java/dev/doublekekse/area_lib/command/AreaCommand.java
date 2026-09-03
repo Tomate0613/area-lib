@@ -7,21 +7,19 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
-import dev.doublekekse.area_lib.areas.BoxArea;
-import dev.doublekekse.area_lib.areas.CompositeArea;
-import dev.doublekekse.area_lib.areas.SphereArea;
-import dev.doublekekse.area_lib.areas.UnionArea;
-import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
+import dev.doublekekse.area_lib.areas.*;
 import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.command.argument.ARGBColorArgument;
 import dev.doublekekse.area_lib.command.argument.AreaArgument;
 import dev.doublekekse.area_lib.command.argument.AreaComponentTypeArgument;
 import dev.doublekekse.area_lib.component.AreaComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
+import dev.doublekekse.area_lib.exception.AreaInUseException;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -34,10 +32,11 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
@@ -90,7 +89,7 @@ public class AreaCommand {
                         var value = area.get(type);
                         var encoded = type.codec().encodeStart(NbtOps.INSTANCE, value);
 
-                        if(encoded.error().isPresent()) {
+                        if (encoded.error().isPresent()) {
                             ctx.getSource().sendFailure(Component.literal(encoded.error().get().message()));
                             return 0;
                         }
@@ -128,7 +127,13 @@ public class AreaCommand {
                 var savedData = AreaLib.getSavedData(server);
 
                 var area = AreaArgument.getArea(ctx, "id");
-                savedData.remove(server, area);
+
+                try {
+                    savedData.remove(server, area);
+                } catch (AreaInUseException e) {
+                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_area_in_use", area.toString(), e.other.toString()));
+                    return 0;
+                }
 
                 ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.delete.success", area.toString()), true);
 
@@ -163,15 +168,15 @@ public class AreaCommand {
                     var area = AreaArgument.getCompositeArea(ctx, "id");
                     var subArea = AreaArgument.getArea(ctx, "sub_area");
 
-                    if (subArea instanceof CompositeArea) {
-                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_composite_sub_area"));
+                    if (subArea instanceof DerivedArea) {
+                        ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_derived_dependency"));
 
                         return 0;
                     }
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.toString(), area.toString()), false);
+                    area.addDependency(server, subArea);
 
-                    area.addSubArea(server, subArea);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.toString(), area.toString()), false);
 
                     return 1;
                 }))).then(literal("remove").then(argument("sub_area", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
@@ -180,9 +185,9 @@ public class AreaCommand {
                     var area = AreaArgument.getCompositeArea(ctx, "id");
                     var subArea = AreaArgument.getArea(ctx, "sub_area");
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.toString()), false);
+                    area.removeDependency(server, subArea);
 
-                    area.removeSubArea(server, subArea);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.toString()), false);
 
                     return 1;
                 }))))
@@ -226,8 +231,34 @@ public class AreaCommand {
         int apply(AreaSavedData savedData, CommandContext<CommandSourceStack> ctx, Area area) throws CommandSyntaxException;
     }
 
+    @FunctionalInterface
+    interface A {
+        Area create(AreaSavedData savedData, Identifier id, Collection<Identifier> areaIds);
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> createComposite(String type, A a, ShapeAction action, String areaArgumentName) {
+        return literal(type).then(argument("areas", StringArgumentType.greedyString()).suggests(AreaArgument::listMultipleSuggestions).executes(ctx -> {
+            var server = ctx.getSource().getServer();
+            var areas = AreaArgument.getAreas(ctx, "areas");
+            var savedData = AreaLib.getSavedData(server);
+
+            for (var area : areas) {
+                if (area instanceof DerivedArea) {
+                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_derived_dependency"));
+
+                    return 0;
+                }
+            }
+
+            var id = IdentifierArgument.getId(ctx, areaArgumentName);
+            var area = a.create(savedData, id, areas.stream().map(Area::getId).toList());
+
+            return action.apply(savedData, ctx, area);
+        }));
+    }
+
     private static ArgumentBuilder<CommandSourceStack, ?> forEachAreaShape(ArgumentBuilder<CommandSourceStack, ?> builder, ShapeAction action, String areaArgumentName) {
-        return (builder.then(literal("box").then(argument("from", Vec3Argument.vec3()).then(argument("to", Vec3Argument.vec3()).executes((ctx) -> {
+        return builder.then(literal("box").then(argument("from", Vec3Argument.vec3()).then(argument("to", Vec3Argument.vec3()).executes((ctx) -> {
             var level = ctx.getSource().getLevel();
             var server = ctx.getSource().getServer();
 
@@ -240,26 +271,7 @@ public class AreaCommand {
             var area = new BoxArea(savedData, id, level.dimension().identifier(), new AABB(from, to));
 
             return action.apply(savedData, ctx, area);
-        })))).then(literal("union").then(argument("areas", StringArgumentType.greedyString()).suggests(AreaArgument::listMultipleSuggestions).executes(ctx -> {
-            var server = ctx.getSource().getServer();
-            var areas = AreaArgument.getAreas(ctx, "areas");
-            var savedData = AreaLib.getSavedData(server);
-
-            for (var area : areas) {
-                if (area instanceof CompositeArea) {
-                    ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_composite_sub_area"));
-
-                    return 0;
-                }
-            }
-
-            var bvhTree = new LazyAreaBVHTree(savedData, areas.stream().map(Area::getId).toList());
-            var id = IdentifierArgument.getId(ctx, areaArgumentName);
-
-            var area = new UnionArea(savedData, id, bvhTree);
-
-            return action.apply(savedData, ctx, area);
-        }))).then(literal("sphere").then(argument("center", Vec3Argument.vec3()).then(argument("radius", DoubleArgumentType.doubleArg()).executes(ctx -> {
+        })))).then(literal("sphere").then(argument("center", Vec3Argument.vec3()).then(argument("radius", DoubleArgumentType.doubleArg()).executes(ctx -> {
             var level = ctx.getSource().getLevel();
             var server = ctx.getSource().getServer();
 
@@ -272,7 +284,21 @@ public class AreaCommand {
             var area = new SphereArea(savedData, id, level.dimension().identifier(), center, radius);
 
             return action.apply(savedData, ctx, area);
-        })))));
+        })))).then(createComposite("union", UnionArea::new, action, areaArgumentName)
+        ).then(createComposite("intersection", IntersectionArea::new, action, areaArgumentName)
+        ).then(literal("difference").then(argument("minuend", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).then(argument("subtrahend", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+            var server = ctx.getSource().getServer();
+
+            var minuend = AreaArgument.getArea(ctx, "minuend");
+            var subtrahend = AreaArgument.getArea(ctx, "subtrahend");
+
+            var savedData = AreaLib.getSavedData(server);
+            var id = IdentifierArgument.getId(ctx, areaArgumentName);
+
+            var area = new DifferenceArea(savedData, id, minuend.getId(), subtrahend.getId());
+
+            return action.apply(savedData, ctx, area);
+        }))));
     }
 
     private static int create(AreaSavedData savedData, CommandContext<CommandSourceStack> ctx, Area area) {
@@ -303,30 +329,15 @@ public class AreaCommand {
         var previousArea = savedData.get(area.getId());
 
         // TODO
-        if (area instanceof CompositeArea compositeArea) {
-            if (compositeArea.hasSubArea(previousArea)) {
-                ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.modify.replace.error.self_composite"));
+        if (area instanceof DerivedArea derivedArea) {
+            if (derivedArea.hasDependency(previousArea)) {
+                ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.modify.replace.error.self_derived"));
 
                 return 0;
             }
         }
 
-        var compositeAreas = new ArrayList<CompositeArea>();
-
-        for (var other : savedData.getAreas()) {
-            if (other instanceof CompositeArea compositeArea) {
-                if (compositeArea.hasSubArea(previousArea)) {
-                    compositeAreas.add(compositeArea);
-                }
-            }
-        }
-
-        savedData.remove(null, previousArea);
         savedData.put(null, area);
-
-        for (var compositeArea : compositeAreas) {
-            compositeArea.addSubArea(null, area);
-        }
 
         area.copyComponentsFrom(server, previousArea);
 

@@ -15,10 +15,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Objects;
 
 public class BoxArea extends Area {
+    @ApiStatus.Internal
+    public static final Identifier IDENTIFIER = AreaLib.id("box");
+
     AABB aabb;
     Identifier dimension;
 
@@ -43,7 +47,7 @@ public class BoxArea extends Area {
 
     @Override
     public Identifier getType() {
-        return AreaLib.id("box");
+        return IDENTIFIER;
     }
 
     @Override

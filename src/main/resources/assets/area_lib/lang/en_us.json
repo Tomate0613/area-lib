@@ -9,21 +9,20 @@
   "area_lib.commands.area.modify.components.set": "Set \"%1$s\" of \"%3$s\" to %2$s",
   "area_lib.commands.area.modify.components.remove": "Removed component \"%s\" from area \"%s\"",
 
-  "area_lib.commands.area.remove_from.error_to_few": "Can't remove from area with only one region. If you intended to delete the area instead use /area delete",
-
   "area_lib.commands.area.modify.gizmo_style.success": "Updated gizmo style for area \"%s\"",
   "area_lib.commands.area.modify.priority.success": "Set priority for area \"%s\" to %s",
 
   "area_lib.commands.area.modify.replace.success": "Replaced shape for area \"%s\"",
-  "area_lib.commands.area.modify.replace.error.self_composite": "Can't replace area with composite area containing itself",
+  "area_lib.commands.area.modify.replace.error.self_derived": "Can't replace area with derived area containing itself",
 
   "area_lib.commands.area.delete.success": "Removed area \"%s\"",
 
   "area_lib.commands.area.error_does_not_exist": "Area \"%s\" does not exist",
-  "area_lib.commands.area.error_composite_sub_area": "Sub areas may not be composite areas",
+  "area_lib.commands.area.error_derived_dependency": "Dependencies of areas may not be derived areas",
   "area_lib.commands.area.error_is_not_composite": "Area \"%s\" is not a composite area",
   "area_lib.commands.area.error_component_type_does_not_exist": "Area component type \"%s\" does not exist",
   "area_lib.commands.area.error_component_not_present": "Area \"%s\" does not have component of type \"%s\"",
+  "area_lib.commands.area.error_area_in_use": "Area \"%s\" is a dependency of \"%s\"",
 
   "area_lib.commands.area.error_not_in_area": "Not in an area",
   "area_lib.commands.area.query.entry": "You are currently in \"%s\"",
