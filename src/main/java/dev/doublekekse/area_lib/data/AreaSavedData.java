@@ -4,14 +4,15 @@ import com.mojang.serialization.*;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.AreaListeners;
-import dev.doublekekse.area_lib.bvh.LazyAreaBVHTree;
+import dev.doublekekse.area_lib.collection.bvh.LazyAreaBVHTree;
 import dev.doublekekse.area_lib.component.EntityTrackedAreaComponentType;
 import dev.doublekekse.area_lib.component.SampledAreaComponentType;
 import dev.doublekekse.area_lib.duck.EntityDuck;
+import dev.doublekekse.area_lib.exception.AreaInUseException;
 import dev.doublekekse.area_lib.packet.ClientboundAreaSyncPacket;
 import dev.doublekekse.area_lib.registry.AreaComponentRegistry;
 import dev.doublekekse.area_lib.registry.AreaTypeRegistry;
-import dev.doublekekse.area_lib.areas.CompositeArea;
+import dev.doublekekse.area_lib.areas.DerivedArea;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
@@ -22,12 +23,12 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
-public class AreaSavedData extends SavedData {
+public final class AreaSavedData extends SavedData {
     private final Map<Identifier, Area> areas = new HashMap<>();
 
     private final LazyAreaBVHTree trackedAreas = new LazyAreaBVHTree(this);
@@ -52,7 +53,7 @@ public class AreaSavedData extends SavedData {
 
 
     @ApiStatus.Internal
-    public @NotNull CompoundTag save() {
+    public @NonNull CompoundTag save() {
         var compoundTag = new CompoundTag();
 
         areas.forEach((key, value) -> {
@@ -80,6 +81,7 @@ public class AreaSavedData extends SavedData {
             area.load(tag.getCompound("data").get());
 
             data.areas.put(id, area);
+            data.updateTrackingAndSamplingStatus(area);
         }
 
         data.isInitialized = true;
@@ -97,8 +99,9 @@ public class AreaSavedData extends SavedData {
 
     public void put(MinecraftServer server, Area area) {
         var previous = areas.put(area.getId(), area);
+
         if (previous != null) {
-            stopTracking(previous);
+            invalidateDependency(area.getId());
         }
 
         invalidate(server, area);
@@ -112,18 +115,21 @@ public class AreaSavedData extends SavedData {
         return areas.get(id);
     }
 
-    public void remove(MinecraftServer server, Area area) {
-        areas.remove(area.getId());
-        stopTracking(area);
-        invalidate(server, area);
-
-        // Remove area from sub-area caches
-        // This is definitely not an ideal way to deal with this, but it works
+    public void remove(MinecraftServer server, Area area) throws AreaInUseException {
         for (var entry : areas.entrySet()) {
-            if (entry.getValue() instanceof CompositeArea compositeArea) {
-                compositeArea.removeSubArea(null, area);
+            if (entry.getValue() instanceof DerivedArea derivedArea) {
+                if (derivedArea.hasDependency(area)) {
+                    throw new AreaInUseException(area, derivedArea);
+                }
             }
         }
+
+        areas.remove(area.getId());
+        stopTracking(area);
+        for (var sampledArea : samplingAreas) {
+            sampledArea.remove(area.getId());
+        }
+        invalidate(server, area);
     }
 
     public boolean has(Identifier id) {
@@ -293,10 +299,6 @@ public class AreaSavedData extends SavedData {
         return samplingAreas[type.index].contains(entity.level(), entity.position());
     }
 
-    private void sync(MinecraftServer server) {
-        server.getPlayerList().getPlayers().forEach(player -> ServerPlayNetworking.send(player, new ClientboundAreaSyncPacket(this)));
-    }
-
     /**
      * Use {@link AreaLib#getSavedData(MinecraftServer)} instead
      */
@@ -311,6 +313,8 @@ public class AreaSavedData extends SavedData {
      */
     @ApiStatus.Internal
     public void invalidate(@Nullable MinecraftServer server, Area area) {
+        updateTrackingAndSamplingStatus(area);
+
         AreaListeners.emit(this);
 
         setDirty();
@@ -320,28 +324,79 @@ public class AreaSavedData extends SavedData {
         }
     }
 
+    /**
+     * For internal usage.
+     */
     @ApiStatus.Internal
     public List<Area> getEntityTrackedAreas(Level level, Vec3 pos) {
         return trackedAreas.findAreasContaining(level, pos);
     }
 
-    @ApiStatus.Internal
-    public void startTracking(Area area) {
+
+    private void sync(MinecraftServer server) {
+        server.getPlayerList().getPlayers().forEach(player -> ServerPlayNetworking.send(player, new ClientboundAreaSyncPacket(this)));
+    }
+
+    private void invalidateDependency(Identifier areaId) {
+        for (var area : areas.values()) {
+            if (area instanceof DerivedArea derivedArea) {
+                derivedArea.invalidateDependency(areaId);
+            }
+        }
+
+        trackedAreas.invalidate(areaId);
+
+        for (var sampledArea : samplingAreas) {
+            sampledArea.invalidate(areaId);
+        }
+    }
+
+    private void updateTrackingAndSamplingStatus(Area area) {
+        var shouldBeTracked = false;
+        for (var type : AreaComponentRegistry.getTypes()) {
+            if (type instanceof SampledAreaComponentType<?> sampledType) {
+                if (area.has(sampledType)) {
+                    startSampling(area, sampledType);
+                } else {
+                    stopSampling(area, sampledType);
+                }
+            } else if (type instanceof EntityTrackedAreaComponentType<?>) {
+                if (area.has(type)) {
+                    shouldBeTracked = true;
+                }
+            }
+        }
+
+        if (shouldBeTracked) {
+            startTracking(area);
+        } else {
+            stopTracking(area);
+        }
+    }
+
+    private void startTracking(Area area) {
         trackedAreas.add(area.getId());
     }
 
-    @ApiStatus.Internal
-    public void stopTracking(Area area) {
+    private void stopTracking(Area area) {
         trackedAreas.remove(area.getId());
     }
 
-    @ApiStatus.Internal
-    public void startSampling(Area area, SampledAreaComponentType<?> type) {
+    private void startSampling(Area area, SampledAreaComponentType<?> type) {
         samplingAreas[type.index].add(area.getId());
     }
 
-    @ApiStatus.Internal
-    public void stopSampling(Area area, SampledAreaComponentType<?> type) {
+    private void stopSampling(Area area, SampledAreaComponentType<?> type) {
         samplingAreas[type.index].remove(area.getId());
+    }
+
+    @Override
+    public String toString() {
+        return "AreaSavedData{" +
+            "areas=" + areas +
+            ", trackedAreas=" + trackedAreas +
+            ", samplingAreas=" + Arrays.toString(samplingAreas) +
+            ", isInitialized=" + isInitialized +
+            '}';
     }
 }

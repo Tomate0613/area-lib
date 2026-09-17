@@ -7,10 +7,4 @@ import org.jetbrains.annotations.ApiStatus;
 public sealed interface AreaComponentType<T> permits BaseAreaComponentType {
     Identifier id();
     Codec<T> codec();
-
-    @ApiStatus.Internal
-    boolean entityTracked();
-
-    @ApiStatus.Internal
-    boolean sampled();
 }

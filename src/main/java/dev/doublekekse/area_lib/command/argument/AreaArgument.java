@@ -9,6 +9,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.areas.CompositeArea;
+import dev.doublekekse.area_lib.areas.DerivedArea;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
@@ -41,7 +42,7 @@ public class AreaArgument {
     public static CompletableFuture<Suggestions> listCompositeSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         var savedData = AreaLib.getSavedData(context.getSource().getLevel());
 
-        return SharedSuggestionProvider.suggest(savedData.getAreas().stream().filter(area -> area instanceof CompositeArea).map(
+        return SharedSuggestionProvider.suggest(savedData.getAreas().stream().filter(area -> area instanceof DerivedArea).map(
             (area) -> area.getId().toString()
         ), builder);
     }

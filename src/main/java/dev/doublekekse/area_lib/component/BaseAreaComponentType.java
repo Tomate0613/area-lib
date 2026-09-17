@@ -31,14 +31,4 @@ sealed class BaseAreaComponentType<T> implements AreaComponentType<T> permits En
     public Codec<T> codec() {
         return codec;
     }
-
-    @ApiStatus.Internal
-    public boolean entityTracked() {
-        return type == Type.ENTITY_TRACKED;
-    }
-
-    @ApiStatus.Internal
-    public boolean sampled() {
-        return type == Type.SAMPLED;
-    }
 }

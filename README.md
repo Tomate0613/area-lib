@@ -20,11 +20,11 @@ Components can be set and removed using
 You can create union areas using \
 `/area create <id> union <...areas>`
 
-Adding additional sub-areas can be done using \
-`/area modify_composite <id> add <sub_area>`
+Adding additional dependencies can be done using \
+`/area modify_composite <id> add <dependency>`
 
-Similarly, ub-areas can be removed by running \
-`/area modify_composite <id> remove <sub_area>`
+Similarly, dependencies can be removed by running \
+`/area modify_composite <id> remove <dependency>`
 
 ## Deleting areas
 To completely delete an area use

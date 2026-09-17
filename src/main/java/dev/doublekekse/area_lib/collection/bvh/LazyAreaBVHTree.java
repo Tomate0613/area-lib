@@ -1,53 +1,33 @@
-package dev.doublekekse.area_lib.bvh;
+package dev.doublekekse.area_lib.collection.bvh;
 
 import dev.doublekekse.area_lib.Area;
+import dev.doublekekse.area_lib.collection.AbstractAreaCollection;
 import dev.doublekekse.area_lib.data.AreaSavedData;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Predicate;
 
 @ApiStatus.Experimental
-public class LazyAreaBVHTree {
+public class LazyAreaBVHTree extends AbstractAreaCollection {
     private @Nullable BVHNode node;
-    private final Set<Identifier> areaIds = new HashSet<>();
-    private final AreaSavedData savedData;
 
     public LazyAreaBVHTree(AreaSavedData savedData) {
-        this.savedData = savedData;
+        super(savedData);
     }
 
     public LazyAreaBVHTree(AreaSavedData savedData, Collection<Identifier> areaIds) {
-        this.savedData = savedData;
-        this.areaIds.addAll(areaIds);
+        super(savedData, areaIds);
     }
 
-    private void invalidate() {
+    @Override
+    protected void invalidate() {
         node = null;
-    }
-
-    public void add(Identifier areaId) {
-        var didAdd = areaIds.add(areaId);
-
-        if (didAdd) {
-            invalidate();
-        }
-    }
-
-    public void remove(Identifier areaId) {
-        var didRemove = areaIds.remove(areaId);
-
-        if (didRemove) {
-            invalidate();
-        }
     }
 
     private void build() {
@@ -114,30 +94,6 @@ public class LazyAreaBVHTree {
         }
 
         return node.getBoundingBox();
-    }
-
-    public CompoundTag save() {
-        var tag = new CompoundTag();
-        var listTag = new ListTag();
-
-        for (var areaId : areaIds) {
-            listTag.add(StringTag.valueOf(areaId.toString()));
-        }
-
-        tag.put("area_ids", listTag);
-
-        return tag;
-    }
-
-    public void load(CompoundTag tag) {
-        var listTag = tag.getList("area_ids").get();
-        areaIds.clear();
-
-        for (var areaIdTag : listTag) {
-            var areaId = Identifier.parse(areaIdTag.asString().get());
-
-            areaIds.add(areaId);
-        }
     }
 
     @Override

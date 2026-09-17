@@ -3,7 +3,6 @@ package dev.doublekekse.area_lib;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.component.AreaComponentType;
-import dev.doublekekse.area_lib.component.SampledAreaComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.AreaComponentRegistry;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
@@ -20,7 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
@@ -84,14 +83,6 @@ public abstract class Area {
     @SuppressWarnings("unchecked")
     public <T> void put(@Nullable MinecraftServer server, AreaComponentType<T> type, T component) {
         components.put((AreaComponentType<Object>) type, component);
-
-        if (type.entityTracked()) {
-            savedData.startTracking(this);
-        }
-        if (type.sampled()) {
-            savedData.startSampling(this, (SampledAreaComponentType<?>) type);
-        }
-
         invalidate(server);
     }
 
@@ -108,14 +99,6 @@ public abstract class Area {
     public <T> T remove(@Nullable MinecraftServer server, AreaComponentType<T> type) {
         var component = (T) components.remove(type);
         invalidate(server);
-
-        if (type.entityTracked() && !shouldBeTracked()) {
-            savedData.stopTracking(this);
-        }
-        if (type.sampled() && !shouldSample(type)) {
-            savedData.stopSampling(this, (SampledAreaComponentType<?>) type);
-        }
-
         return component;
     }
 
@@ -129,27 +112,6 @@ public abstract class Area {
     public void copyComponentsFrom(@Nullable MinecraftServer server, Area other) {
         components.putAll(other.components);
         invalidate(server);
-
-        if (shouldBeTracked()) {
-            savedData.startTracking(this);
-        } else {
-            // I am relatively sure I can remove this else
-            savedData.stopTracking(this);
-        }
-
-        for (var c : other.components.keySet()) {
-            if (c.sampled()) {
-                savedData.startSampling(this, (SampledAreaComponentType<?>) c);
-            }
-        }
-    }
-
-    private boolean shouldBeTracked() {
-        return components.keySet().stream().anyMatch(AreaComponentType::entityTracked);
-    }
-
-    private boolean shouldSample(AreaComponentType<?> type) {
-        return components.keySet().stream().anyMatch(s -> s.equals(type));
     }
 
     /**
@@ -228,14 +190,6 @@ public abstract class Area {
                 continue;
             }
 
-            if (type.entityTracked()) {
-                savedData.startTracking(this);
-            }
-
-            if (type.sampled()) {
-                savedData.startSampling(this, (SampledAreaComponentType<?>) type);
-            }
-
             var r = type.codec().parse(NbtOps.INSTANCE, entry.getValue());
             if (r.isError()) {
                 if (r.error().isPresent()) {
@@ -295,7 +249,8 @@ public abstract class Area {
      * @param poseStack the pose stack used for transformations
      */
     @ApiStatus.Internal
-    public abstract void render(LevelRenderContext context, PoseStack poseStack, Identifier dimension);
+    public void render(LevelRenderContext context, PoseStack poseStack, Identifier dimension) {
+    }
 
     public Identifier getId() {
         return id;

@@ -2,28 +2,28 @@ package dev.doublekekse.area_lib.areas;
 
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.collection.AbstractAreaCollection;
-import dev.doublekekse.area_lib.collection.bvh.LazyAreaBVHTree;
+import dev.doublekekse.area_lib.collection.AreaIntersection;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Collection;
 
-public class UnionArea extends CompositeArea {
+public class IntersectionArea extends CompositeArea {
     @ApiStatus.Internal
-    public static final Identifier IDENTIFIER = AreaLib.id("union");
+    public static final Identifier IDENTIFIER = AreaLib.id("intersection");
 
-    public UnionArea(AreaSavedData savedData, Identifier id, Collection<Identifier> areaIds) {
-        super(savedData, id, new LazyAreaBVHTree(savedData, areaIds));
+    public IntersectionArea(AreaSavedData savedData, Identifier id, Collection<Identifier> areas) {
+        super(savedData, id, new AreaIntersection(savedData, areas));
     }
 
-    public UnionArea(AreaSavedData savedData, Identifier id) {
+    public IntersectionArea(AreaSavedData savedData, Identifier id) {
         super(savedData, id);
     }
 
     @Override
     AbstractAreaCollection newCollection(AreaSavedData savedData) {
-        return new LazyAreaBVHTree(savedData);
+        return new AreaIntersection(savedData);
     }
 
     @Override
