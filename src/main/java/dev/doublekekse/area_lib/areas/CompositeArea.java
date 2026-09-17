@@ -33,7 +33,7 @@ public abstract class CompositeArea extends Area implements DerivedArea {
 
     public void addDependency(MinecraftServer server, Area area) {
         if (area instanceof DerivedArea) {
-            throw new IllegalArgumentException("Sub areas may not be derived areas");
+            throw new IllegalArgumentException("Dependencies may not be derived areas");
         }
 
         areas.add(area.getId());

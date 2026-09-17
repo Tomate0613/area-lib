@@ -2,8 +2,8 @@
   "area_lib.commands.area.create.error_existing": "Can't create area as it already exists",
   "area_lib.commands.area.create.success": "Created area \"%s\" successfully",
 
-  "area_lib.commands.area.modify_composite.add.success": "Added sub-area \"%s\" to area \"%s\"",
-  "area_lib.commands.area.modify_composite.remove.success": "Removed sub-area \"%s\" from area \"%s\"",
+  "area_lib.commands.area.modify_composite.add.success": "Added dependency \"%s\" to area \"%s\"",
+  "area_lib.commands.area.modify_composite.remove.success": "Removed dependency \"%s\" from area \"%s\"",
 
   "area_lib.commands.area.modify.components.copy_from.success": "Added all area components from %s to %s",
   "area_lib.commands.area.modify.components.set": "Set \"%1$s\" of \"%3$s\" to %2$s",

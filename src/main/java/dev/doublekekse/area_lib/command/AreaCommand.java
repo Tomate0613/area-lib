@@ -162,32 +162,32 @@ public class AreaCommand {
 
                 return count;
             })).then(literal("modify_composite").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listCompositeSuggestions)
-                .then(literal("add").then(argument("sub_area", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                .then(literal("add").then(argument("dependency", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getCompositeArea(ctx, "id");
-                    var subArea = AreaArgument.getArea(ctx, "sub_area");
+                    var dependency = AreaArgument.getArea(ctx, "dependency");
 
-                    if (subArea instanceof DerivedArea) {
+                    if (dependency instanceof DerivedArea) {
                         ctx.getSource().sendFailure(Component.translatable("area_lib.commands.area.error_derived_dependency"));
 
                         return 0;
                     }
 
-                    area.addDependency(server, subArea);
+                    area.addDependency(server, dependency);
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", subArea.toString(), area.toString()), false);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", dependency.toString(), area.toString()), false);
 
                     return 1;
-                }))).then(literal("remove").then(argument("sub_area", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                }))).then(literal("remove").then(argument("dependency", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getCompositeArea(ctx, "id");
-                    var subArea = AreaArgument.getArea(ctx, "sub_area");
+                    var dependency = AreaArgument.getArea(ctx, "dependency");
 
-                    area.removeDependency(server, subArea);
+                    area.removeDependency(server, dependency);
 
-                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", subArea.toString(), area.toString()), false);
+                    ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.remove.success", dependency.toString(), area.toString()), false);
 
                     return 1;
                 }))))
