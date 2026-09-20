@@ -76,7 +76,7 @@ public class AreaLibClient implements ClientModInitializer {
         var keyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
             "area_lib.key.toggle_areas",
             InputConstants.Type.KEYBOARD,
-            -1,
+            InputConstants.UNKNOWN.getValue(),
             new KeyMapping.Category(AreaLib.id("area_lib"))
         ));
 
