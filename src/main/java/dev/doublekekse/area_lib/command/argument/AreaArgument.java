@@ -4,52 +4,68 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.doublekekse.area_lib.Area;
 import dev.doublekekse.area_lib.AreaLib;
 import dev.doublekekse.area_lib.areas.CompositeArea;
 import dev.doublekekse.area_lib.areas.DerivedArea;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.suggestions.SuggestionContext;
+import net.minecraft.commands.suggestions.SuggestionProviders;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class AreaArgument {
     public static final DynamicCommandExceptionType ERROR_UNKNOWN_AREA = new DynamicCommandExceptionType((object) -> Component.translatableEscape("area_lib.commands.area.error_does_not_exist", object));
     public static final DynamicCommandExceptionType ERROR_NOT_COMPOSITE_AREA = new DynamicCommandExceptionType((object) -> Component.translatableEscape("area_lib.commands.area.error_is_not_composite", object));
 
-    public static CompletableFuture<Suggestions> listSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
-        var savedData = AreaLib.getSavedData(context.getSource().getLevel());
+    public static final SuggestionProvider<CommandSourceStack> SUGGESTIONS = SuggestionProviders.serverOnly(((server, _, builder) -> {
+        var savedData = AreaLib.getSavedData(server);
 
-        return SharedSuggestionProvider.suggest(savedData.getAreas().stream().map(
+        return SuggestionContext.suggest(savedData.getAreas().stream().map(
             (area) -> area.getId().toString()
         ), builder);
-    }
+    }));
 
-    public static CompletableFuture<Suggestions> listMultipleSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
+    public static final SuggestionProvider<CommandSourceStack> MULTIPLE_SUGGESTIONS = SuggestionProviders.serverOnly(((server, _, builder) -> {
         var input = builder.getInput();
         var lastSpace = input.lastIndexOf(' ');
 
         var builderFromLastSpace = new SuggestionsBuilder(input, lastSpace + 1);
-        return listSuggestions(context, builderFromLastSpace);
-    }
+        var savedData = AreaLib.getSavedData(server);
 
-    public static CompletableFuture<Suggestions> listCompositeSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
-        var savedData = AreaLib.getSavedData(context.getSource().getLevel());
-
-        return SharedSuggestionProvider.suggest(savedData.getAreas().stream().filter(area -> area instanceof DerivedArea).map(
+        return SuggestionContext.suggest(savedData.getAreas().stream().map(
             (area) -> area.getId().toString()
         ), builder);
-    }
+    }));
+
+    public static final SuggestionProvider<CommandSourceStack> COMPOSITE_SUGGESTIONS = SuggestionProviders.serverOnly(((server, _, builder) -> {
+        var savedData = AreaLib.getSavedData(server);
+
+        return SuggestionContext.suggest(savedData.getAreas().stream().filter(area -> area instanceof DerivedArea).map(
+            (area) -> area.getId().toString()
+        ), builder);
+    }));
 
     public static Area getArea(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
         var identifier = context.getArgument(name, Identifier.class);
         var savedData = AreaLib.getSavedData(context.getSource().getServer());
+
+        if (savedData.has(identifier)) {
+            return savedData.get(identifier);
+        }
+
+        throw ERROR_UNKNOWN_AREA.create(identifier);
+    }
+
+    static Area getArea(final MinecraftServer server, final CommandContext<?> context, final String name) throws CommandSyntaxException {
+        var identifier = context.getArgument(name, Identifier.class);
+        var savedData = AreaLib.getSavedData(server);
 
         if (savedData.has(identifier)) {
             return savedData.get(identifier);

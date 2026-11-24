@@ -7,7 +7,7 @@ import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.gizmos.SphereGizmo;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelSubmitContext;
 import net.minecraft.gizmos.Gizmos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
@@ -41,7 +41,7 @@ public class SphereArea extends Area {
     }
 
     @Override
-    public void render(LevelRenderContext context, PoseStack poseStack, Identifier dim) {
+    public void render(LevelSubmitContext context, PoseStack poseStack, Identifier dim) {
         if (!dim.equals(dimension)) {
             return;
         }

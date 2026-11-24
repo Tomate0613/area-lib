@@ -7,7 +7,7 @@ import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.AreaComponentRegistry;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelSubmitContext;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -249,7 +249,7 @@ public abstract class Area {
      * @param poseStack the pose stack used for transformations
      */
     @ApiStatus.Internal
-    public void render(LevelRenderContext context, PoseStack poseStack, Identifier dimension) {
+    public void render(LevelSubmitContext context, PoseStack poseStack, Identifier dimension) {
     }
 
     public Identifier getId() {

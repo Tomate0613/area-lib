@@ -22,7 +22,7 @@ public class DevAreaCommand {
             ctx.getSource().sendSuccess(() -> Component.literal(savedData.toString()), false);
 
             return 1;
-        })).then(literal("dump_area").then(argument("area", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+        })).then(literal("dump_area").then(argument("area", IdentifierArgument.id()).suggests(AreaArgument.SUGGESTIONS).executes(ctx -> {
             var area = AreaArgument.getArea(ctx, "area");
             ctx.getSource().sendSuccess(() -> NbtUtils.toPrettyComponent(area.save()), false);
 

@@ -7,7 +7,7 @@ import dev.doublekekse.area_lib.client.AreaLibClient;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
 import dev.doublekekse.area_lib.util.CompoundUtils;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelSubmitContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gizmos.Gizmos;
 import net.minecraft.nbt.CompoundTag;
@@ -75,7 +75,7 @@ public class BoxArea extends Area {
     }
 
     @Override
-    public void render(LevelRenderContext context, PoseStack poseStack, Identifier dim) {
+    public void render(LevelSubmitContext context, PoseStack poseStack, Identifier dim) {
         if (!dim.equals(dimension)) {
             return;
         }

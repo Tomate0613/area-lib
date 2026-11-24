@@ -2,10 +2,6 @@ package dev.doublekekse.area_lib.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -21,10 +17,10 @@ import dev.doublekekse.area_lib.component.AreaComponentType;
 import dev.doublekekse.area_lib.data.AreaSavedData;
 import dev.doublekekse.area_lib.exception.AreaInUseException;
 import dev.doublekekse.area_lib.registry.BuiltInAreaComponents;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.IdentifierArgument;
-import net.minecraft.commands.arguments.NbtTagArgument;
+import net.minecraft.commands.arguments.*;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.nbt.CompoundTag;
@@ -45,15 +41,15 @@ import static net.minecraft.commands.Commands.literal;
 public class AreaCommand {
     @SuppressWarnings("unchecked")
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(literal("area").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+        dispatcher.register(literal("area").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))
             .then(literal("create").then(forEachAreaShape(argument("id", IdentifierArgument.id()), AreaCommand::create, "id")))
-            .then(literal("modify").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions)
+            .then(literal("modify").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument.SUGGESTIONS)
                 .then(forEachAreaShape(literal("replace_shape"), AreaCommand::replace, "id"))
-                .then(literal("priority").then(argument("priority", IntegerArgumentType.integer()).executes(ctx -> {
+                .then(literal("priority").then(argument("priority", IntegerArgument.integer()).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getArea(ctx, "id");
-                    var priority = IntegerArgumentType.getInteger(ctx, "priority");
+                    var priority = IntegerArgument.getInteger(ctx, "priority");
 
                     area.setPriority(server, priority);
 
@@ -61,14 +57,14 @@ public class AreaCommand {
 
                     return 1;
                 }))).then(literal("gizmo_style")
-                    .then(literal("stroke_color").then(argument("color", StringArgumentType.word())
+                    .then(literal("stroke_color").then(argument("color", StringArgument.word())
                         .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(ARGBColorArgument.getColor(ctx, "color"), s.strokeWidth(), s.fill())))))
-                    .then(literal("stroke_width").then(argument("width", FloatArgumentType.floatArg(0))
-                        .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(s.stroke(), FloatArgumentType.getFloat(ctx, "width"), s.fill())))))
-                    .then(literal("fill_color").then(argument("color", StringArgumentType.word())
+                    .then(literal("stroke_width").then(argument("width", FloatArgument.floatArg(0))
+                        .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(s.stroke(), FloatArgument.getFloat(ctx, "width"), s.fill())))))
+                    .then(literal("fill_color").then(argument("color", StringArgument.word())
                         .executes(updateGizmoStyle((s, ctx) -> new GizmoStyle(s.stroke(), s.strokeWidth(), ARGBColorArgument.getColor(ctx, "color"))))))
                 ).then(literal("components")
-                    .then(literal("set").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listSuggestions).executes(ctx -> {
+                    .then(literal("set").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument.SUGGESTIONS).executes(ctx -> {
                         var type = AreaComponentTypeArgument.getComponentType(ctx, "component_type");
 
                         return setComponent(ctx, type, new CompoundTag());
@@ -77,7 +73,7 @@ public class AreaCommand {
                         var value = NbtTagArgument.getNbtTag(ctx, "value");
 
                         return setComponent(ctx, type, value);
-                    })))).then(literal("get").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listPresentSuggestions).executes(ctx -> {
+                    })))).then(literal("get").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument.PRESENT_SUGGESTIONS).executes(ctx -> {
                         var area = AreaArgument.getArea(ctx, "id");
                         var type = (AreaComponentType<Object>) AreaComponentTypeArgument.getComponentType(ctx, "component_type");
 
@@ -97,7 +93,7 @@ public class AreaCommand {
                         ctx.getSource().sendSuccess(() -> NbtUtils.toPrettyComponent(encoded.getOrThrow()), false);
 
                         return 1;
-                    }))).then(literal("remove").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument::listPresentSuggestions).executes(ctx -> {
+                    }))).then(literal("remove").then(argument("component_type", IdentifierArgument.id()).suggests(AreaComponentTypeArgument.PRESENT_SUGGESTIONS).executes(ctx -> {
                         var area = AreaArgument.getArea(ctx, "id");
                         var type = AreaComponentTypeArgument.getComponentType(ctx, "component_type");
 
@@ -110,7 +106,7 @@ public class AreaCommand {
                         ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify.components.remove", type.id().toString(), area.toString()), true);
 
                         return 1;
-                    }))).then(literal("copy_from").then(argument("other_id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                    }))).then(literal("copy_from").then(argument("other_id", IdentifierArgument.id()).suggests(AreaArgument.SUGGESTIONS).executes(ctx -> {
                         var server = ctx.getSource().getServer();
 
                         var area = AreaArgument.getArea(ctx, "id");
@@ -121,7 +117,7 @@ public class AreaCommand {
                         return 1;
                     })))
                 )
-            )).then(literal("delete").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+            )).then(literal("delete").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument.SUGGESTIONS).executes(ctx -> {
                 var server = ctx.getSource().getServer();
 
                 var savedData = AreaLib.getSavedData(server);
@@ -161,8 +157,8 @@ public class AreaCommand {
                 }
 
                 return count;
-            })).then(literal("modify_composite").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument::listCompositeSuggestions)
-                .then(literal("add").then(argument("dependency", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+            })).then(literal("modify_composite").then(argument("id", IdentifierArgument.id()).suggests(AreaArgument.COMPOSITE_SUGGESTIONS)
+                .then(literal("add").then(argument("dependency", IdentifierArgument.id()).suggests(AreaArgument.SUGGESTIONS).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getCompositeArea(ctx, "id");
@@ -179,7 +175,7 @@ public class AreaCommand {
                     ctx.getSource().sendSuccess(() -> Component.translatable("area_lib.commands.area.modify_composite.add.success", dependency.toString(), area.toString()), false);
 
                     return 1;
-                }))).then(literal("remove").then(argument("dependency", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+                }))).then(literal("remove").then(argument("dependency", IdentifierArgument.id()).suggests(AreaArgument.SUGGESTIONS).executes(ctx -> {
                     var server = ctx.getSource().getServer();
 
                     var area = AreaArgument.getCompositeArea(ctx, "id");
@@ -237,7 +233,7 @@ public class AreaCommand {
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> createComposite(String type, A a, ShapeAction action, String areaArgumentName) {
-        return literal(type).then(argument("areas", StringArgumentType.greedyString()).suggests(AreaArgument::listMultipleSuggestions).executes(ctx -> {
+        return literal(type).then(argument("areas", StringArgument.greedyString()).suggests(AreaArgument.MULTIPLE_SUGGESTIONS).executes(ctx -> {
             var server = ctx.getSource().getServer();
             var areas = AreaArgument.getAreas(ctx, "areas");
             var savedData = AreaLib.getSavedData(server);
@@ -271,12 +267,12 @@ public class AreaCommand {
             var area = new BoxArea(savedData, id, level.dimension().identifier(), new AABB(from, to));
 
             return action.apply(savedData, ctx, area);
-        })))).then(literal("sphere").then(argument("center", Vec3Argument.vec3()).then(argument("radius", DoubleArgumentType.doubleArg()).executes(ctx -> {
+        })))).then(literal("sphere").then(argument("center", Vec3Argument.vec3()).then(argument("radius", DoubleArgument.doubleArg()).executes(ctx -> {
             var level = ctx.getSource().getLevel();
             var server = ctx.getSource().getServer();
 
             var center = Vec3Argument.getVec3(ctx, "center");
-            var radius = DoubleArgumentType.getDouble(ctx, "radius");
+            var radius = DoubleArgument.getDouble(ctx, "radius");
 
             var savedData = AreaLib.getSavedData(server);
             var id = IdentifierArgument.getId(ctx, areaArgumentName);
@@ -286,7 +282,7 @@ public class AreaCommand {
             return action.apply(savedData, ctx, area);
         })))).then(createComposite("union", UnionArea::new, action, areaArgumentName)
         ).then(createComposite("intersection", IntersectionArea::new, action, areaArgumentName)
-        ).then(literal("difference").then(argument("minuend", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).then(argument("subtrahend", IdentifierArgument.id()).suggests(AreaArgument::listSuggestions).executes(ctx -> {
+        ).then(literal("difference").then(argument("minuend", IdentifierArgument.id()).suggests(AreaArgument.SUGGESTIONS).then(argument("subtrahend", IdentifierArgument.id()).suggests(AreaArgument.SUGGESTIONS).executes(ctx -> {
             var server = ctx.getSource().getServer();
 
             var minuend = AreaArgument.getArea(ctx, "minuend");
